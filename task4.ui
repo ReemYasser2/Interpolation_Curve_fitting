@@ -332,7 +332,7 @@ QPushButton:pressed {
      <number>25</number>
     </property>
     <property name="singleStep">
-     <number>5</number>
+     <number>1</number>
     </property>
    </widget>
    <widget class="QLabel" name="overlap_label">
