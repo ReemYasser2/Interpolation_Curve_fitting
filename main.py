@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import pathlib
-
+from PyQt5.QtWidgets import QMessageBox
 
 
 
@@ -20,7 +20,8 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi('task4.ui', self)
         self.time = []
         self.magnitude = []
-        self.action_open.triggered.connect(self.open)   
+        self.action_open.triggered.connect(self.open) 
+        self.fit_button.clicked.connect(self.split_chunks)  
     
     def open(self):
         # open any csv file
@@ -30,14 +31,49 @@ class MainWindow(QtWidgets.QMainWindow):
         # read the data in the file
         data = pd.read_csv(path)
         # place the data in time and magnitude arrays
-        self.time = data.values[:, 0]
+        self.time = data.values[:, 0] # the data is read in case it is needed later but won't be used in plotting, for now at least
         self.magnitude = data.values[:, 1]
         # plot the data
+        self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
         self.plotting()      
 
     def plotting(self):
-        self.plot_widget.plot(self.time, self.magnitude)
+        
+       self.plot_widget.plot(self.time, self.magnitude)
+       
     
+    def split_chunks(self):
+        time_array = np.array(self.time)
+        magnitude_array = np.array(self.magnitude)
+        chunk_num = self.num_chunks_input.value()
+
+         # ERROR MESSAGE popup   
+        if chunk_num > 20:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Error!")
+            msg.setInformativeText('The maximum number of chunks is 20')
+            msg.setWindowTitle("Error")
+            msg.exec_()
+            chunk_num = 20
+            
+        # split the arrays into chunks
+        chunked_time = np.array_split(time_array, chunk_num)
+        chunked_mag = np.array_split(magnitude_array, chunk_num)
+
+       # plotting the chunks with different colors di hatb2a function tanya aslun interpolation bas da for testing
+        colors = ['r','b','g','y','m','c','r','b','g','y','m','c','r','b','g','y','m','c','r','b']
+        for i in range (0, chunk_num + 1): # (initial, final but not included)
+            self.plot_widget.plot(chunked_time[i], chunked_mag[i], pen=colors[i])
+    
+        #------------------in case it is needed-----------------------
+        # # Convert chunked arrays into lists
+        # chunked_list = [list(array) for array in chunked_mag]
+        # #print(chunked_list)
+        #-------------------------------------------------------------
+    
+
+
     
 app = QtWidgets.QApplication(sys.argv)
 w = MainWindow()
