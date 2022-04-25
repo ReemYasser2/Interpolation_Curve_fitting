@@ -1,11 +1,10 @@
 from pickle import GLOBAL
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic, QtCore
 from PyQt5.QtWidgets import QSlider
 import pyqtgraph as pg
 import sys  # We need sys so that we can pass argv to QApplication
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 import pathlib
 from PyQt5.QtWidgets import QMessageBox
@@ -38,7 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotting()      
 
     def plotting(self):
-        
+           
        self.plot_widget.plot(self.time, self.magnitude)
        
     
@@ -62,9 +61,12 @@ class MainWindow(QtWidgets.QMainWindow):
         chunked_mag = np.array_split(magnitude_array, chunk_num)
 
        # plotting the chunks with different colors di hatb2a function tanya aslun interpolation bas da for testing
-        colors = ['r','b','g','y','m','c','r','b','g','y','m','c','r','b','g','y','m','c','r','b']
+        colors = [(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255)]
+        self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
+        self.plotting() 
         for i in range (0, chunk_num + 1): # (initial, final but not included)
-            self.plot_widget.plot(chunked_time[i], chunked_mag[i], pen=colors[i])
+            curvePen = pg.mkPen(color=colors[i], style=QtCore.Qt.DashLine)
+            self.plot_widget.plot(chunked_time[i], chunked_mag[i], pen = curvePen)
     
         #------------------in case it is needed-----------------------
         # # Convert chunked arrays into lists
