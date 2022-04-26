@@ -19,6 +19,9 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi('task4.ui', self)
         self.time = []
         self.magnitude = []
+        #initially without ny changes to the spinboxes
+        self.chunk_num = 1
+        self.chunk_size = len(self.magnitude)
         self.action_open.triggered.connect(self.open) 
         self.fit_button.clicked.connect(self.split_chunks)  
     
@@ -42,31 +45,37 @@ class MainWindow(QtWidgets.QMainWindow):
        
     
     def split_chunks(self):
-        time_array = np.array(self.time)
-        magnitude_array = np.array(self.magnitude)
-        chunk_num = self.num_chunks_input.value()
+        # converting to arrays if needed
+        # time_array = np.array(self.time)
+        # magnitude_array = np.array(self.magnitude)
+        self.chunk_num = self.num_chunks_input.value()
+        self.chunk_size = int(len(self.magnitude) / self.chunk_num)
+        overlap_size = int((self.overlap_input.value() / 100) * self.chunk_size)
 
          # ERROR MESSAGE popup   
-        if chunk_num > 20:
+        if self.chunk_num > 20:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
             msg.setText("Error!")
             msg.setInformativeText('The maximum number of chunks is 20')
             msg.setWindowTitle("Error")
             msg.exec_()
-            chunk_num = 20
+            self.chunk_num = 20
             
-        # split the arrays into chunks
-        chunked_time = np.array_split(time_array, chunk_num)
-        chunked_mag = np.array_split(magnitude_array, chunk_num)
+        # split the arrays into chunks (if needed)
+        # chunked_time = np.array_split(time_array, chunk_num)
+        # chunked_mag = np.array_split(magnitude_array, chunk_num)
 
        # plotting the chunks with different colors di hatb2a function tanya aslun interpolation bas da for testing
-        colors = [(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255)]
+        #colors = [(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255)]
         self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
         self.plotting() 
-        for i in range (0, chunk_num + 1): # (initial, final but not included)
-            curvePen = pg.mkPen(color=colors[i], style=QtCore.Qt.DashLine)
-            self.plot_widget.plot(chunked_time[i], chunked_mag[i], pen = curvePen)
+        for i in range (0, len(self.magnitude), self.chunk_size - overlap_size): # (initial, final but not included)
+        #    print(self.time[i:i+self.chunk_size])
+            curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+            self.plot_widget.plot(self.time[i:i+self.chunk_size], self.magnitude[i:i+self.chunk_size], pen = curvePen)
+        
+    
     
         #------------------in case it is needed-----------------------
         # # Convert chunked arrays into lists
