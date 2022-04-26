@@ -21,8 +21,8 @@ color: rgb(255, 255, 255);</string>
    <widget class="QLabel" name="equation_label">
     <property name="geometry">
      <rect>
-      <x>80</x>
-      <y>120</y>
+      <x>70</x>
+      <y>60</y>
       <width>471</width>
       <height>21</height>
      </rect>
@@ -39,8 +39,8 @@ color: rgb(255, 255, 255);</string>
    <widget class="QLabel" name="graph_label">
     <property name="geometry">
      <rect>
-      <x>201</x>
-      <y>21</y>
+      <x>181</x>
+      <y>1</y>
       <width>171</width>
       <height>20</height>
      </rect>
@@ -60,8 +60,8 @@ color: rgb(255, 255, 255);</string>
    <widget class="QSlider" name="degree_slider">
     <property name="geometry">
      <rect>
-      <x>640</x>
-      <y>70</y>
+      <x>630</x>
+      <y>20</y>
       <width>211</width>
       <height>27</height>
      </rect>
@@ -124,8 +124,8 @@ border-radius: 3px;
    <widget class="QLabel" name="degree_label">
     <property name="geometry">
      <rect>
-      <x>650</x>
-      <y>20</y>
+      <x>630</x>
+      <y>0</y>
       <width>133</width>
       <height>18</height>
      </rect>
@@ -145,8 +145,8 @@ border-radius: 3px;
    <widget class="QLabel" name="percentage_label">
     <property name="geometry">
      <rect>
-      <x>960</x>
-      <y>20</y>
+      <x>940</x>
+      <y>0</y>
       <width>114</width>
       <height>18</height>
      </rect>
@@ -166,8 +166,8 @@ border-radius: 3px;
    <widget class="QPushButton" name="start_button">
     <property name="geometry">
      <rect>
-      <x>650</x>
-      <y>760</y>
+      <x>640</x>
+      <y>620</y>
       <width>51</width>
       <height>31</height>
      </rect>
@@ -203,8 +203,8 @@ QPushButton:pressed {
    <widget class="QLabel" name="num_chunks_label">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>760</y>
+      <x>300</x>
+      <y>620</y>
       <width>131</width>
       <height>31</height>
      </rect>
@@ -221,8 +221,8 @@ QPushButton:pressed {
    <widget class="QSpinBox" name="num_chunks_input">
     <property name="geometry">
      <rect>
-      <x>450</x>
-      <y>760</y>
+      <x>440</x>
+      <y>620</y>
       <width>131</width>
       <height>31</height>
      </rect>
@@ -234,8 +234,8 @@ QPushButton:pressed {
    <widget class="QProgressBar" name="progress_bar">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>760</y>
+      <x>700</x>
+      <y>620</y>
       <width>501</width>
       <height>31</height>
      </rect>
@@ -267,8 +267,8 @@ background: qlineargradient(x1: 0, y1: 0.5, x2: 1, y2: 0.5, stop: 0 rgb(4, 1, 50
    <widget class="QLabel" name="y_axis_label">
     <property name="geometry">
      <rect>
-      <x>960</x>
-      <y>720</y>
+      <x>950</x>
+      <y>580</y>
       <width>55</width>
       <height>16</height>
      </rect>
@@ -285,8 +285,8 @@ background: qlineargradient(x1: 0, y1: 0.5, x2: 1, y2: 0.5, stop: 0 rgb(4, 1, 50
    <widget class="QPushButton" name="fit_button">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>760</y>
+      <x>30</x>
+      <y>620</y>
       <width>41</width>
       <height>31</height>
      </rect>
@@ -322,8 +322,8 @@ QPushButton:pressed {
    <widget class="QSpinBox" name="overlap_input">
     <property name="geometry">
      <rect>
-      <x>170</x>
-      <y>760</y>
+      <x>160</x>
+      <y>620</y>
       <width>131</width>
       <height>31</height>
      </rect>
@@ -338,8 +338,8 @@ QPushButton:pressed {
    <widget class="QLabel" name="overlap_label">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>760</y>
+      <x>80</x>
+      <y>620</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -356,10 +356,10 @@ QPushButton:pressed {
    <widget class="QSplitter" name="splitter">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>160</y>
+      <x>10</x>
+      <y>90</y>
       <width>1181</width>
-      <height>541</height>
+      <height>471</height>
      </rect>
     </property>
     <property name="orientation">
@@ -379,8 +379,8 @@ QPushButton:pressed {
    <widget class="QSlider" name="percentage_slider">
     <property name="geometry">
      <rect>
-      <x>940</x>
-      <y>70</y>
+      <x>930</x>
+      <y>20</y>
       <width>211</width>
       <height>27</height>
      </rect>
@@ -443,8 +443,8 @@ border-radius: 3px;
    <widget class="QLCDNumber" name="percentage_display">
     <property name="geometry">
      <rect>
-      <x>1160</x>
-      <y>70</y>
+      <x>1150</x>
+      <y>20</y>
       <width>64</width>
       <height>23</height>
      </rect>
@@ -458,8 +458,8 @@ border-radius: 3px;
    <widget class="QLabel" name="error_label">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>120</y>
+      <x>680</x>
+      <y>60</y>
       <width>471</width>
       <height>21</height>
      </rect>
@@ -476,8 +476,8 @@ border-radius: 3px;
    <widget class="QLabel" name="x_axis_label">
     <property name="geometry">
      <rect>
-      <x>680</x>
-      <y>720</y>
+      <x>670</x>
+      <y>580</y>
       <width>55</width>
       <height>16</height>
      </rect>
@@ -494,8 +494,8 @@ border-radius: 3px;
    <widget class="QComboBox" name="x_dropdown">
     <property name="geometry">
      <rect>
-      <x>730</x>
-      <y>720</y>
+      <x>720</x>
+      <y>580</y>
       <width>151</width>
       <height>22</height>
      </rect>
@@ -519,8 +519,8 @@ border-radius: 3px;
    <widget class="QComboBox" name="y_dropdown">
     <property name="geometry">
      <rect>
-      <x>1010</x>
-      <y>720</y>
+      <x>1000</x>
+      <y>580</y>
       <width>151</width>
       <height>22</height>
      </rect>
@@ -544,8 +544,8 @@ border-radius: 3px;
    <widget class="QLCDNumber" name="percentage_display_2">
     <property name="geometry">
      <rect>
-      <x>860</x>
-      <y>70</y>
+      <x>850</x>
+      <y>20</y>
       <width>64</width>
       <height>23</height>
      </rect>
@@ -563,7 +563,7 @@ border-radius: 3px;
      <x>0</x>
      <y>0</y>
      <width>1257</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
