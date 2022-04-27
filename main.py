@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import pathlib
 from PyQt5.QtWidgets import QMessageBox
+from sympy import degree
+import more_itertools as mit 
 
 
 
@@ -46,13 +48,51 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def split_chunks(self):
         # converting to arrays if needed
-        # time_array = np.array(self.time)
-        # magnitude_array = np.array(self.magnitude)
+        self.time_array = np.array(self.time)
+        self.magnitude_array = np.array(self.magnitude)
         self.chunk_num = self.num_chunks_input.value()
         self.chunk_size = int(len(self.magnitude) / self.chunk_num)
         overlap_size = int((self.overlap_input.value() / 100) * self.chunk_size)
 
-         # ERROR MESSAGE popup   
+         # ERROR MESSAGE popup
+        self.degree= self.degree_slider.value()
+        # if (self.chunk_num==1): #one chunk logic
+        #     Fitted = np.polyfit(self.time_array, self.magnitude_array, 2)
+        #     self.plot_widget.clear()
+        #     self.plotting()
+        #     Poly = np.poly1d(Fitted) #fit line equation
+        #     self.newy = []
+        #     for i in range(len(self.magnitude_array)):
+        #         fittedvalues = Poly(i)
+        #         self.newy.append(fittedvalues)
+        #     self.plt2 = self.plot_widget.plot(self.time_array, self.newy,pen=None, symbol="x", symbolPen=(255,140,0), symbolBrush = (255,140,0))
+        
+        if(self.chunk_num==1):
+            self.fitted=np.poly1d(np.polyfit(self.time_array,self.magnitude_array,1))
+            self.plot_widget.clear()
+            self.plotting()
+            self.y_extrpolation = self.fitted(self.time_array)
+            self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+
+            print(self.y_extrpolation)
+            self.plot_widget.plot(self.time_array, self.y_extrpolation,pen=self.curvePen )
+        else:
+            self.overlap=int(self.overlap_input.value())
+            self.n=int((len(self.time_array))/self.chunk_num)
+            self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+            if(self.overlap>=0 and self.overlap<=25):
+                self.k=int((self.overlap/100)*((len(self.time_array))/self.chunk_num))
+                self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.k))
+                self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.k))
+                self.plot_widget.clear()
+            self.plotting()    
+            for i in range(self.chunk_num):
+                # self.MplWidget.canvas.axes.tick_params(axis="x", colors="white")
+                # self.MplWidget.canvas.axes.tick_params(axis="y", colors="white")
+                # #self.MplWidget.canvas.axes.plot(x_chunks[i], y_chunks[i],'--') 
+                
+                self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], 2))
+                self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    
         if self.chunk_num > 20:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
@@ -68,12 +108,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
        # plotting the chunks with different colors di hatb2a function tanya aslun interpolation bas da for testing
         #colors = [(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255)]
-        self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
-        self.plotting() 
-        for i in range (0, len(self.magnitude), self.chunk_size - overlap_size): # (initial, final but not included)
-        #    print(self.time[i:i+self.chunk_size])
-            curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
-            self.plot_widget.plot(self.time[i:i+self.chunk_size], self.magnitude[i:i+self.chunk_size], pen = curvePen)
+        # self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
+        # self.plotting() 
+        # for i in range (0, len(self.magnitude), self.chunk_size - overlap_size): # (initial, final but not included)
+        # #    print(self.time[i:i+self.chunk_size])
+        #     curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+        #     self.plot_widget.plot(self.time[i:i+self.chunk_size], self.magnitude[i:i+self.chunk_size], pen = curvePen)
         
     
     
