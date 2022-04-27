@@ -71,11 +71,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.fitted=np.poly1d(np.polyfit(self.time_array,self.magnitude_array,1))
             self.plot_widget.clear()
             self.plotting()
-            self.y_extrpolation = self.fitted(self.time_array)
+            self.interrpolation = self.fitted(self.time_array)
             self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
 
-            print(self.y_extrpolation)
-            self.plot_widget.plot(self.time_array, self.y_extrpolation,pen=self.curvePen )
+            self.plot_widget.plot(self.time_array, self.interrpolation,pen=self.curvePen )
         else:
             self.overlap=int(self.overlap_input.value())
             self.n=int((len(self.time_array))/self.chunk_num)
