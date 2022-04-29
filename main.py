@@ -67,28 +67,28 @@ class MainWindow(QtWidgets.QMainWindow):
         #         self.newy.append(fittedvalues)
         #     self.plt2 = self.plot_widget.plot(self.time_array, self.newy,pen=None, symbol="x", symbolPen=(255,140,0), symbolBrush = (255,140,0))
         
-        if(self.chunk_num==1):
-            self.fitted=np.poly1d(np.polyfit(self.time_array,self.magnitude_array,1))
-            self.plot_widget.clear()
-            self.plotting()
-            self.interrpolation = self.fitted(self.time_array)
-            self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+        # if(self.chunk_num==1):
+            # self.fitted=np.poly1d(np.polyfit(self.time_array,self.magnitude_array,1))
+            # self.plot_widget.clear()
+            # self.plotting()
+            # self.interrpolation = self.fitted(self.time_array)
+            # self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
 
-            self.plot_widget.plot(self.time_array, self.interrpolation,pen=self.curvePen )
-        else:
-            self.overlap=int(self.overlap_input.value())
-            self.n=int((len(self.time_array))/self.chunk_num)
-            self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
-            if(self.overlap>=0 and self.overlap<=25):
-                self.overlapsizee=int((self.overlap/100)*((len(self.time_array))/self.chunk_num))
-                self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
-                self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
-                self.plot_widget.clear()
-            self.plotting()    
-            for i in range(self.chunk_num):
-               
-                self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], 2))
-                self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    
+            # self.plot_widget.plot(self.time_array, self.interrpolation,pen=self.curvePen )
+        
+        self.overlap=int(self.overlap_input.value())
+        self.n=int((len(self.time_array))/self.chunk_num)
+        self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+        if(self.overlap>=0 and self.overlap<=25):
+            self.overlapsizee=int((self.overlap/100)*((len(self.time_array))/self.chunk_num))
+            self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
+            self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
+            self.plot_widget.clear()
+        self.plotting()    
+        for i in range(self.chunk_num):
+            
+            self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], self.degree))
+            self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    
         if self.chunk_num > 20:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
