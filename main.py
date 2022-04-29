@@ -80,9 +80,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.n=int((len(self.time_array))/self.chunk_num)
             self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
             if(self.overlap>=0 and self.overlap<=25):
-                self.k=int((self.overlap/100)*((len(self.time_array))/self.chunk_num))
-                self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.k))
-                self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.k))
+                self.overlapsizee=int((self.overlap/100)*((len(self.time_array))/self.chunk_num))
+                self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
+                self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
                 self.plot_widget.clear()
             self.plotting()    
             for i in range(self.chunk_num):
