@@ -86,10 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.plot_widget.clear()
             self.plotting()    
             for i in range(self.chunk_num):
-                # self.MplWidget.canvas.axes.tick_params(axis="x", colors="white")
-                # self.MplWidget.canvas.axes.tick_params(axis="y", colors="white")
-                # #self.MplWidget.canvas.axes.plot(x_chunks[i], y_chunks[i],'--') 
-                
+               
                 self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], 2))
                 self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    
         if self.chunk_num > 20:
