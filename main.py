@@ -1,6 +1,6 @@
 from pickle import GLOBAL
 from PyQt5 import QtWidgets, uic, QtCore
-from PyQt5.QtWidgets import QSlider
+from PyQt5.QtWidgets import QSlider, QLCDNumber
 import pyqtgraph as pg
 import sys  # We need sys so that we can pass argv to QApplication
 import os
@@ -9,7 +9,8 @@ import pandas as pd
 import pathlib
 from PyQt5.QtWidgets import QMessageBox
 from sympy import degree
-import more_itertools as mit 
+import more_itertools as mit
+from sympy import S, symbols, printing 
 
 
 
@@ -26,6 +27,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.chunk_size = len(self.magnitude)
         self.action_open.triggered.connect(self.open) 
         self.fit_button.clicked.connect(self.split_chunks)  
+        self.degree_slider.valueChanged.connect(self.equation) 
+        self.degree_slider.setMinimum(1)
+        self.degree_slider.setMaximum(10)
+        self.percentage_display_2= self.findChild(QLCDNumber, "percentage_display_2")
+        self.degree_slider.valueChanged.connect(lambda: self.percentage_display_2.display(self.degree_slider.value()))
+        self.percentage_slider.valueChanged.connect(self.equation) 
+        self.percentage_slider.setMinimum(1)
+        self.percentage_slider.setMaximum(100)
+        self.percentage_display= self.findChild(QLCDNumber, "percentage_display")
+        self.percentage_slider.valueChanged.connect(lambda: self.percentage_display.display(self.percentage_slider.value()))
+
     
     def open(self):
         # open any csv file
@@ -44,6 +56,21 @@ class MainWindow(QtWidgets.QMainWindow):
     def plotting(self):
            
        self.plot_widget.plot(self.time, self.magnitude)
+
+    
+    def equation(self):
+        
+        global degree
+        degree = self.degree_slider.value()
+       
+        p = np.polyfit(self.time, self.magnitude, degree)
+        xSymbols = symbols("x")
+        poly = sum(S("{:6.2f}".format(v))*xSymbols**i for i, v in enumerate(p[::1]))
+        eq_latex = printing.latex(poly)
+        label="{}".format(eq_latex)
+        
+        self.equation_label.setText(label)
+        
        
     
     def split_chunks(self):
@@ -67,15 +94,15 @@ class MainWindow(QtWidgets.QMainWindow):
         #         self.newy.append(fittedvalues)
         #     self.plt2 = self.plot_widget.plot(self.time_array, self.newy,pen=None, symbol="x", symbolPen=(255,140,0), symbolBrush = (255,140,0))
         
-        # if(self.chunk_num==1):
-            # self.fitted=np.poly1d(np.polyfit(self.time_array,self.magnitude_array,1))
-            # self.plot_widget.clear()
-            # self.plotting()
-            # self.interrpolation = self.fitted(self.time_array)
-            # self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
-
-            # self.plot_widget.plot(self.time_array, self.interrpolation,pen=self.curvePen )
         
+        # self.fitted=np.poly1d(np.polyfit(self.time_array,self.magnitude_array,self.degree))
+        # self.plot_widget.clear()
+        # self.plotting()
+        # self.interrpolation = self.fitted(self.time_array)
+        # self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+
+        # self.plot_widget.plot(self.time_array, self.interrpolation,pen=self.curvePen )
+    
         self.overlap=int(self.overlap_input.value())
         self.n=int((len(self.time_array))/self.chunk_num)
         self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
