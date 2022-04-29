@@ -1,25 +1,16 @@
-from cProfile import label
-from importlib.resources import path
 from pickle import GLOBAL
-from tkinter import Y
-from tkinter import *
 from PyQt5 import QtWidgets, uic, QtCore
-from PyQt5.QtWidgets import QSlider
+from PyQt5.QtWidgets import QSlider, QLCDNumber
 import pyqtgraph as pg
 import sys  # We need sys so that we can pass argv to QApplication
 import os
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pathlib
-from sympy import init_printing
-from sympy import S, symbols, printing
-
-
-
-import pandas as pd 
-
-
+from PyQt5.QtWidgets import QMessageBox
+from sympy import degree
+import more_itertools as mit
+from sympy import S, symbols, printing 
 
 
 
@@ -35,12 +26,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.chunk_num = 1
         self.chunk_size = len(self.magnitude)
         self.action_open.triggered.connect(self.open) 
-        # self.fit_button.clicked.connect(self.split_chunks) 
-        self.degree_slider.valueChanged.connect(self.chunks) 
-      
+        self.fit_button.clicked.connect(self.split_chunks)  
+        self.degree_slider.valueChanged.connect(self.equation) 
+        self.degree_slider.setMinimum(1)
+        self.degree_slider.setMaximum(10)
+        self.percentage_display_2= self.findChild(QLCDNumber, "percentage_display_2")
+        self.degree_slider.valueChanged.connect(lambda: self.percentage_display_2.display(self.degree_slider.value()))
+        self.percentage_slider.valueChanged.connect(self.equation) 
+        self.percentage_slider.setMinimum(1)
+        self.percentage_slider.setMaximum(100)
+        self.percentage_display= self.findChild(QLCDNumber, "percentage_display")
+        self.percentage_slider.valueChanged.connect(lambda: self.percentage_display.display(self.percentage_slider.value()))
+
     
     def open(self):
-        global data
         # open any csv file
         files_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open only CSV ', os.getenv('HOME'), "csv(*.csv)")
         path = files_name[0]
@@ -52,13 +51,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.magnitude = data.values[:, 1]
         # plot the data
         self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
-        self.plotting() 
-        
+        self.plotting()      
+
     def plotting(self):
            
        self.plot_widget.plot(self.time, self.magnitude)
 
-    def chunks(self):
+    
+    def equation(self):
         
         global degree
         degree = self.degree_slider.value()
@@ -72,62 +72,71 @@ class MainWindow(QtWidgets.QMainWindow):
         self.equation_label.setText(label)
         
        
-        
-        
-        # self.equation_label.setText(label)
-        
-
-        # xSymbols = symbols("x")
-        # poly = sum(S("{:6.2f}".format(v))*xSymbols**i for i, v in enumerate(p[::1]))
-        
-        # eq_latex = printing.latex(poly)
-        # self.equation_label.setText(eq_latex)
-        # init_printing() 
-        # # label="${}$".format(eq_latex)
-        
-        # # self.equation_label.setText(label)
-       
-
-           
-
-          
-       
     
-    # def split_chunks(self):
-    #     # converting to arrays if needed
-    #     # time_array = np.array(self.time)
-    #     # magnitude_array = np.array(self.magnitude)
-    #     self.chunk_num = self.num_chunks_input.value()
-    #     self.chunk_size = int(len(self.magnitude) / self.chunk_num)
-    #     overlap_size = int((self.overlap_input.value() / 100) * self.chunk_size)
+    def split_chunks(self):
+        # converting to arrays if needed
+        self.time_array = np.array(self.time)
+        self.magnitude_array = np.array(self.magnitude)
+        self.chunk_num = self.num_chunks_input.value()
+        self.chunk_size = int(len(self.magnitude) / self.chunk_num)
+        overlap_size = int((self.overlap_input.value() / 100) * self.chunk_size)
 
-    #      # ERROR MESSAGE popup   
-    #     if self.chunk_num > 20:
-    #         msg = QMessageBox()
-    #         msg.setIcon(QMessageBox.Critical)
-    #         msg.setText("Error!")
-    #         msg.setInformativeText('The maximum number of chunks is 20')
-    #         msg.setWindowTitle("Error")
-    #         msg.exec_()
-    #         self.chunk_num = 20
+         # ERROR MESSAGE popup
+        self.degree= self.degree_slider.value()
+        # if (self.chunk_num==1): #one chunk logic
+        #     Fitted = np.polyfit(self.time_array, self.magnitude_array, 2)
+        #     self.plot_widget.clear()
+        #     self.plotting()
+        #     Poly = np.poly1d(Fitted) #fit line equation
+        #     self.newy = []
+        #     for i in range(len(self.magnitude_array)):
+        #         fittedvalues = Poly(i)
+        #         self.newy.append(fittedvalues)
+        #     self.plt2 = self.plot_widget.plot(self.time_array, self.newy,pen=None, symbol="x", symbolPen=(255,140,0), symbolBrush = (255,140,0))
+        
+        if(self.chunk_num==1):
+            self.fitted=np.poly1d(np.polyfit(self.time_array,self.magnitude_array,1))
+            self.plot_widget.clear()
+            self.plotting()
+            self.interrpolation = self.fitted(self.time_array)
+            self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+
+            self.plot_widget.plot(self.time_array, self.interrpolation,pen=self.curvePen )
+        else:
+            self.overlap=int(self.overlap_input.value())
+            self.n=int((len(self.time_array))/self.chunk_num)
+            self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+            if(self.overlap>=0 and self.overlap<=25):
+                self.overlapsizee=int((self.overlap/100)*((len(self.time_array))/self.chunk_num))
+                self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
+                self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
+                self.plot_widget.clear()
+            self.plotting()    
+            for i in range(self.chunk_num):
+               
+                self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], 2))
+                self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    
+        if self.chunk_num > 20:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Error!")
+            msg.setInformativeText('The maximum number of chunks is 20')
+            msg.setWindowTitle("Error")
+            msg.exec_()
+            self.chunk_num = 20
             
         # split the arrays into chunks (if needed)
         # chunked_time = np.array_split(time_array, chunk_num)
         # chunked_mag = np.array_split(magnitude_array, chunk_num)
 
        # plotting the chunks with different colors di hatb2a function tanya aslun interpolation bas da for testing
-        # #colors = [(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255)]
+        #colors = [(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255),(255, 0, 0),(0, 255, 0),(0, 0, 255),(255, 255, 0),(255, 0, 255)]
         # self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
         # self.plotting() 
         # for i in range (0, len(self.magnitude), self.chunk_size - overlap_size): # (initial, final but not included)
         # #    print(self.time[i:i+self.chunk_size])
         #     curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
         #     self.plot_widget.plot(self.time[i:i+self.chunk_size], self.magnitude[i:i+self.chunk_size], pen = curvePen)
-
-        # #interpolation
-        #     model_interpolation =np.polyfit(self.time, self.magnitude, self.degree_slider)
-        #     self.MplWidget.canvas.axes.plot(self.magnitude, model_interpolation(self.magnitude), '-.')
-                
         
     
     
@@ -137,30 +146,6 @@ class MainWindow(QtWidgets.QMainWindow):
         # #print(chunked_list)
         #-------------------------------------------------------------
     
-    def error_map(self):
-        x_value = 0
-        y_value = 0
-        if(self.x_dropdown.currentText() == "Number of Chunks"):
-            x_value = self.chunk_num
-        elif(self.x_dropdown.currentText() == "Fitting Polynomial Order"):
-            x_value = self.chunk_num
-        elif(self.x_dropdown.currentText() == "Overlapping Between Chunks"):
-            x_value = self.chunk_num
-        
-        if(self.y_dropdown.currentText() == "Number of Chunks"):
-            y_value = self.chunk_num
-        elif(self.y_dropdown.currentText() == "Fitting Polynomial Order"):
-            y_value = self.chunk_num
-        elif(self.y_dropdown.currentText() == "Overlapping Between Chunks"):
-            y_value = self.chunk_num
-        
-        x_value = range(1,x_value+1)
-        y_value = range(1,y_value+1)
-
-        a = np.random.random((x_value, y_value))
-        plt.imshow(a, cmap='hot', interpolation='nearest')
-        plt.show()  
-        
 
 
     
