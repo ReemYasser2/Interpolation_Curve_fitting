@@ -501,12 +501,12 @@ border-radius: 3px;
     </item>
     <item>
      <property name="text">
-      <string>Fitting Polynomial Order</string>
+      <string>Polynomial Order</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Overlapping Between Chunks</string>
+      <string>Overlap</string>
      </property>
     </item>
    </widget>
@@ -526,12 +526,12 @@ border-radius: 3px;
     </item>
     <item>
      <property name="text">
-      <string>Fitting Polynomial Order</string>
+      <string>Polynomial Order</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Overlapping Between Chunks</string>
+      <string>Overlap</string>
      </property>
     </item>
    </widget>
