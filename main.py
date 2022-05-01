@@ -79,7 +79,7 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def extrapolation(self):
         percent_data = self.percentage_slider.value()
-        percent_predict = 100 - percent_data
+        #percent_predict = 100 - percent_data
         # cut the list into a certain percentage of data according to the slider
         split_time = self.time[:int(len(self.time) * percent_data / 100)]
         split_magnitude = self.magnitude[:int(len(self.magnitude) * percent_data / 100)]
