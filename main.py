@@ -1,4 +1,5 @@
 from pickle import GLOBAL
+from ssl import ALERT_DESCRIPTION_NO_RENEGOTIATION
 from PyQt5 import QtWidgets, uic, QtCore
 from PyQt5.QtWidgets import QSlider, QLCDNumber
 import pyqtgraph as pg
@@ -11,6 +12,7 @@ from PyQt5.QtWidgets import QMessageBox
 from sympy import degree
 import more_itertools as mit
 from sympy import S, symbols, printing 
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 
 
 
@@ -26,15 +28,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.chunk_num = 1
         self.chunk_size = len(self.magnitude)
         self.action_open.triggered.connect(self.open) 
-        self.fit_button.clicked.connect(self.split_chunks)  
+        self.fit_button.clicked.connect(self.split_chunks) 
+        self.predict_button.clicked.connect(self.extrapolation) 
         self.degree_slider.valueChanged.connect(self.equation) 
-        self.degree_slider.setMinimum(1)
-        self.degree_slider.setMaximum(10)
+
+        # self.degree_slider.setMinimum(1)
+        # self.degree_slider.setMaximum(10)
         self.percentage_display_2= self.findChild(QLCDNumber, "percentage_display_2")
         self.degree_slider.valueChanged.connect(lambda: self.percentage_display_2.display(self.degree_slider.value()))
         self.percentage_slider.valueChanged.connect(self.equation) 
-        self.percentage_slider.setMinimum(1)
-        self.percentage_slider.setMaximum(100)
+        # self.percentage_slider.setMinimum(1)
+        # self.percentage_slider.setMaximum(100)
         self.percentage_display= self.findChild(QLCDNumber, "percentage_display")
         self.percentage_slider.valueChanged.connect(lambda: self.percentage_display.display(self.percentage_slider.value()))
 
@@ -68,9 +72,32 @@ class MainWindow(QtWidgets.QMainWindow):
         poly = sum(S("{:6.2f}".format(v))*xSymbols**i for i, v in enumerate(p[::1]))
         eq_latex = printing.latex(poly)
         label="{}".format(eq_latex)
-        
+       
+
+
         self.equation_label.setText(label)
+    
+    def extrapolation(self):
+        percent_data = self.percentage_slider.value()
+        percent_predict = 100 - percent_data
+        # cut the list into a certain percentage of data according to the slider
+        split_time = self.time[:int(len(self.time) * percent_data / 100)]
+        split_magnitude = self.magnitude[:int(len(self.magnitude) * percent_data / 100)]
+        # convert lists to arrays
+        arr_time = np.array(split_time) 
+        arr_magnitude = np.array(split_magnitude)
+        #prediction array
+        prediction = np.polyfit(split_time, split_magnitude, degree)
+        arr_predict = np.array(prediction)
+        # append both
+        mag_predict = np.append(arr_magnitude, arr_predict)
         
+        self.plot_widget.clear()
+        
+        self.plot_widget.plot(mag_predict) # self.time, 
+        
+
+
        
     
     def split_chunks(self):
@@ -81,7 +108,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.chunk_size = int(len(self.magnitude) / self.chunk_num)
         overlap_size = int((self.overlap_input.value() / 100) * self.chunk_size)
 
-         # ERROR MESSAGE popup
+      
         self.degree= self.degree_slider.value()
         # if (self.chunk_num==1): #one chunk logic
         #     Fitted = np.polyfit(self.time_array, self.magnitude_array, 2)
@@ -116,14 +143,6 @@ class MainWindow(QtWidgets.QMainWindow):
             
             self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], self.degree))
             self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    
-        if self.chunk_num > 20:
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Critical)
-            msg.setText("Error!")
-            msg.setInformativeText('The maximum number of chunks is 20')
-            msg.setWindowTitle("Error")
-            msg.exec_()
-            self.chunk_num = 20
             
         # split the arrays into chunks (if needed)
         # chunked_time = np.array_split(time_array, chunk_num)
