@@ -12,8 +12,9 @@ from PyQt5.QtWidgets import QMessageBox
 from sympy import degree
 import more_itertools as mit
 from sympy import S, symbols, printing 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-
+from PyQt5.QtGui import QIcon, QPixmap
+from io import BytesIO
+import matplotlib.pyplot as plt
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -62,24 +63,32 @@ class MainWindow(QtWidgets.QMainWindow):
        self.plot_widget.plot(self.time, self.magnitude)
 
     
+    def render_latex(self,formula, fontsize=12, dpi=300, format_='svg'):
+        """Renders LaTeX formula into image.
+        """
+        fig = plt.figure(figsize=(0.01, 0.01))
+        fig.text(0, 0, u'${}$'.format(formula), color='white',fontsize=fontsize)
+        buffer_ = BytesIO()
+        fig.savefig(buffer_, dpi=dpi, transparent=True, format=format_, bbox_inches='tight', pad_inches=0.0)
+        plt.close(fig)
+        return buffer_.getvalue()
+
     def equation(self):
-        
         global degree
         degree = self.degree_slider.value()
-       
         p = np.polyfit(self.time, self.magnitude, degree)
         xSymbols = symbols("x")
         poly = sum(S("{:6.2f}".format(v))*xSymbols**i for i, v in enumerate(p[::1]))
-        eq_latex = printing.latex(poly)
-        label="{}".format(eq_latex)
-       
-
-
-        self.equation_label.setText(label)
+        eq_latex = printing.latex(poly)     
+        image_bytes = self.render_latex(eq_latex, fontsize=7, dpi=200, format_='png')
+        qp = QPixmap()
+        qp.loadFromData(image_bytes)
+        self.equation_label.setPixmap(qp)
+        
     
     def extrapolation(self):
         percent_data = self.percentage_slider.value()
-        #percent_predict = 100 - percent_data
+        # percent_predict = 100 - percent_data
         # cut the list into a certain percentage of data according to the slider
         split_time = self.time[:int(len(self.time) * percent_data / 100)]
         split_magnitude = self.magnitude[:int(len(self.magnitude) * percent_data / 100)]
