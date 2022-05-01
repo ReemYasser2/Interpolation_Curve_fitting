@@ -32,18 +32,23 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fit_button.clicked.connect(self.split_chunks) 
         self.predict_button.clicked.connect(self.extrapolation) 
         self.degree_slider.valueChanged.connect(self.equation) 
-
-        # self.degree_slider.setMinimum(1)
-        # self.degree_slider.setMaximum(10)
         self.percentage_display_2= self.findChild(QLCDNumber, "percentage_display_2")
         self.degree_slider.valueChanged.connect(lambda: self.percentage_display_2.display(self.degree_slider.value()))
         self.percentage_slider.valueChanged.connect(self.equation) 
-        # self.percentage_slider.setMinimum(1)
-        # self.percentage_slider.setMaximum(100)
         self.percentage_display= self.findChild(QLCDNumber, "percentage_display")
         self.percentage_slider.valueChanged.connect(lambda: self.percentage_display.display(self.percentage_slider.value()))
 
-    
+        
+        
+        # else:
+        #     msg = QMessageBox()
+        #     msg.setIcon(QMessageBox.Critical)
+        #     msg.setText("Error!")
+        #     msg.setInformativeText('You did not choose an interpolation type')
+        #     msg.setWindowTitle("Error")
+        #     msg.exec_()
+
+
     def open(self):
         # open any csv file
         files_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open only CSV ', os.getenv('HOME'), "csv(*.csv)")
@@ -56,11 +61,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.magnitude = data.values[:, 1]
         # plot the data
         self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
-        self.plotting()      
+        self.plot_widget.plot(self.time, self.magnitude)   
+        if self.poly_button.isChecked():
+            print(1)
 
-    def plotting(self):
+        if self.cubic_button.isChecked(): 
+            print(2)
+ 
+
+
+    # def plotting(self):
            
-       self.plot_widget.plot(self.time, self.magnitude)
+    #    self.plot_widget.plot(self.time, self.magnitude)
 
     
     def render_latex(self,formula, fontsize=12, dpi=300, format_='svg'):
@@ -105,9 +117,6 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.plot_widget.plot(mag_predict) # self.time, 
         
-
-
-       
     
     def split_chunks(self):
         # converting to arrays if needed
@@ -116,10 +125,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.chunk_num = self.num_chunks_input.value()
         self.chunk_size = int(len(self.magnitude) / self.chunk_num)
         overlap_size = int((self.overlap_input.value() / 100) * self.chunk_size)
-
-      
         self.degree= self.degree_slider.value()
-        # if (self.chunk_num==1): #one chunk logic
+        self.overlap=int(self.overlap_input.value())
+        self.n=int((len(self.time_array))/self.chunk_num)
+        self.curvePen = pg.mkPen(color=(255, 0, 0), style=QtCore.Qt.DashLine)
+        if(self.overlap>=0 and self.overlap<=25):
+            self.overlapsizee=int((self.overlap/100)*((len(self.time_array))/self.chunk_num))
+            self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
+            self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
+            self.plot_widget.clear()
+        self.plot_widget.plot(self.time, self.magnitude)  
+
+        for i in range(self.chunk_num):
+            
+            self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], self.degree))
+            self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    
+        
+
+           # if (self.chunk_num==1): #one chunk logic
         #     Fitted = np.polyfit(self.time_array, self.magnitude_array, 2)
         #     self.plot_widget.clear()
         #     self.plotting()
@@ -138,21 +161,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
 
         # self.plot_widget.plot(self.time_array, self.interrpolation,pen=self.curvePen )
-    
-        self.overlap=int(self.overlap_input.value())
-        self.n=int((len(self.time_array))/self.chunk_num)
-        self.curvePen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
-        if(self.overlap>=0 and self.overlap<=25):
-            self.overlapsizee=int((self.overlap/100)*((len(self.time_array))/self.chunk_num))
-            self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
-            self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
-            self.plot_widget.clear()
-        self.plotting()    
-        for i in range(self.chunk_num):
-            
-            self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], self.degree))
-            self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    
-            
+
+
+
         # split the arrays into chunks (if needed)
         # chunked_time = np.array_split(time_array, chunk_num)
         # chunked_mag = np.array_split(magnitude_array, chunk_num)
