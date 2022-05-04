@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1258</width>
-    <height>864</height>
+    <width>1277</width>
+    <height>726</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -531,58 +531,9 @@ border-radius: 3px;
       <pointsize>9</pointsize>
      </font>
     </property>
-   </widget>
-   <widget class="QGroupBox" name="interpolation_type_groupbox">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>630</y>
-      <width>411</width>
-      <height>51</height>
-     </rect>
+    <property name="intValue" stdset="0">
+     <number>1</number>
     </property>
-    <property name="title">
-     <string>Interpolation Type</string>
-    </property>
-    <widget class="QRadioButton" name="cubic_button">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>20</y>
-       <width>95</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Bi-cubic</string>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="spline_button">
-     <property name="geometry">
-      <rect>
-       <x>310</x>
-       <y>20</y>
-       <width>95</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Spline</string>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="poly_button">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>95</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Polynomial</string>
-     </property>
-    </widget>
    </widget>
    <widget class="QPushButton" name="predict_button">
     <property name="geometry">
@@ -631,13 +582,64 @@ QPushButton:pressed {
      <string>Equation</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="spline_button">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>640</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Spline</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="cubic_button">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>640</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Cubic</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="interpolation_type">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>630</y>
+      <width>261</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Polynomial</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Cubic</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Spline</string>
+     </property>
+    </item>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1258</width>
+     <width>1277</width>
      <height>26</height>
     </rect>
    </property>
