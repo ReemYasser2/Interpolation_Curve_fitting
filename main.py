@@ -16,6 +16,7 @@ from sympy import S, symbols, printing
 from PyQt5.QtGui import QIcon, QPixmap
 from io import BytesIO
 import matplotlib.pyplot as plt
+from scipy.interpolate import make_interp_spline
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -31,7 +32,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.overlap = 0
         self.chunk_size = len(self.magnitude)
         self.action_open.triggered.connect(self.open) 
-        self.fit_button.clicked.connect(self.poly_interpolate) 
+        self.interpolation_type.currentIndexChanged.connect(self.choose_type)
+        # self.fit_button.clicked.connect(self.poly_interpolate) 
+        # self.spline_button.clicked.connect(self.spline) 
+        # self.cubic_button.clicked.connect(self.cubic)
+        # self.interpolation_type.setCurrentIndex(0)
         self.predict_button.clicked.connect(self.extrapolation) 
         self.degree_slider.valueChanged.connect(self.equation) 
         self.percentage_display_2= self.findChild(QLCDNumber, "percentage_display_2")
@@ -43,14 +48,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mag_chunks = []
 
         
-        
-        # else:
-        #     msg = QMessageBox()
-        #     msg.setIcon(QMessageBox.Critical)
-        #     msg.setText("Error!")
-        #     msg.setInformativeText('You did not choose an interpolation type')
-        #     msg.setWindowTitle("Error")
-        #     msg.exec_()
 
 
     def open(self):
@@ -66,14 +63,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # plot the data
         # time = np.linspace(0,len(self.magnitude),len(self.magnitude))
         self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
-        self.plot_widget.plot(self.magnitude)   
-
-        if self.poly_button.isChecked():
-            print(1)
-
-        if self.cubic_button.isChecked(): 
-            print(2)
- 
+        self.plot_widget.plot(self.magnitude)  
+         
 
 
     # def plotting(self):
@@ -104,7 +95,58 @@ class MainWindow(QtWidgets.QMainWindow):
         self.equation_label.setPixmap(qp)
         
 
+
+    def spline(self):
+        # self.plot_widget.clear()
+        deg= self.degree_slider.value()
+        self.time_array = np.array(self.time)
+        self.magnitude_array = np.array(self.magnitude)
+
+        if deg % 2 == 0 and deg != 2 and int(self.interpolation_type.currentIndex()) == 2:
+            
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Error!")
+            msg.setInformativeText('Spline degree must be odd or 2! \n It has been reset to degree - 1')
+            msg.setWindowTitle("Error")
+            msg.exec_()
+
+        if deg % 2 == 0 and deg != 2:
+            deg -= 1
+
+            
+ 
+       
+ 
+        # Plotting the Graph
+        X_=np.linspace(self.time_array.min(), self.time_array.max(), 500)
+     
+        Y_ = make_interp_spline(self.time_array , self.magnitude_array, k= deg)(X_)
+        self.plot_widget.clear()
+        self.plot_widget.plot(self.time, self.magnitude)  
+        
+        self.plot_widget.plot(X_, Y_, pen='b')
+       
+
+
+    def cubic(self):
+        # self.plot_widget.clear()
+        self.degree= self.degree_slider.value()
+        self.time_array = np.array(self.time)
+        self.magnitude_array = np.array(self.magnitude)
+ 
+ 
+        # Plotting the Graph
+        X_=np.linspace(self.time_array.min(), self.time_array.max(), 500)
+     
+        Y_ = make_interp_spline(self.time_array , self.magnitude_array)(X_)
+        self.plot_widget.clear()
+        self.plot_widget.plot(self.time, self.magnitude)  
+       
+        self.plot_widget.plot(X_, Y_, pen='y')
     
+     
+        
     def split_chunks(self):
         # converting to arrays if needed
         self.time_array = np.array(self.time)
@@ -136,6 +178,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], self.degree))
             self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    #self.time_chunks[i], 
             #print(self.Interpolation(self.time_chunks[i]))
+    
+    def choose_type(self):
+        if int(self.interpolation_type.currentIndex()) == 0:
+            self.fit_button.clicked.connect(self.poly_interpolate) 
+        elif int(self.interpolation_type.currentIndex()) == 1:
+            self.fit_button.clicked.connect(self.cubic) 
+        elif int(self.interpolation_type.currentIndex()) == 2:
+            self.fit_button.clicked.connect(self.spline)
         
 
     def extrapolation(self):
@@ -163,7 +213,7 @@ class MainWindow(QtWidgets.QMainWindow):
         time_inter = np.linspace(0,int(len(self.magnitude)* percent_data / 100), len(mag_arr))
         self.fitted=np.poly1d(np.polyfit(time_inter,mag_arr,degree))
         self.interrpolation = self.fitted(time_inter)
-        self.curvePen = pg.mkPen(color=(255, 255, 0), style=QtCore.Qt.DashLine)
+        self.curvePen = pg.mkPen(color=(255, 0, 0), style=QtCore.Qt.DashLine)
         # print(len(time_inter))
         # print(len(mag_arr))
 
@@ -173,7 +223,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # prediction time - blue
         time_pre = np.linspace(int(len(self.magnitude)* percent_data / 100),len(self.magnitude), int(len(self.magnitude)* percent_predict / 100))
         # interpolation time - red
-        self.curPen = pg.mkPen(color=(0, 0, 255), style=QtCore.Qt.DashLine)
+        self.curPen = pg.mkPen(color=(255, 0, 255), style=QtCore.Qt.DashLine)
         self.plot_widget.plot(time_pre, arr_predict, pen = self.curPen) # self.time, 
         
     
