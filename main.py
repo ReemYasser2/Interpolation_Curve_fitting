@@ -63,7 +63,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # plot the data
         # time = np.linspace(0,len(self.magnitude),len(self.magnitude))
         self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
-        self.plot_widget.plot(self.magnitude)  
+        self.plot_widget.plot(self.time, self.magnitude)  
          
 
 
@@ -190,41 +190,45 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def extrapolation(self):
         percent_data = self.percentage_slider.value()
-        percent_predict = 100 - percent_data
+        #percent_predict = 100 - percent_data
         # cut the list into a certain percentage of data according to the slider
         # split_time = self.time[:int(len(self.time) * percent_data / 100)]
         # split_magnitude = self.magnitude[:int(len(self.magnitude) * percent_data / 100)]
-        for i in range(self.chunk_num):
-            split_time = self.time_chunks[i][:int(len(self.time_chunks[i]) * percent_predict / 100)]
-            split_magnitude = self.mag_chunks[i][:int(len(self.mag_chunks[i]) * percent_predict / 100)]
+        # for i in range(self.chunk_num):
+        split_time = self.time[0:int(len(self.time) * percent_data / 100)]
+        split_magnitude = self.magnitude[0:int(len(self.magnitude) * percent_data / 100)]
+        time_predict =  self.time[int(len(self.time) * percent_data / 100):(len(self.time))]
         # convert lists to arrays
-        arr_time = np.array(split_time) 
-        arr_magnitude = np.array(split_magnitude)
+        # arr_time = np.array(split_time) 
+        # arr_magnitude = np.array(split_magnitude)
         #prediction array
+        # time_predict = np.linspace(int(len(self.magnitude)* percent_data / 100),len(self.magnitude), int(len(self.magnitude)* percent_predict / 100))
+        print(split_time)
+        print(time_predict)
         coeff = np.polyfit(split_time, split_magnitude, degree)
-        prediction = np.polyval(coeff, split_time)
+        prediction = np.polyval(coeff, time_predict)
         arr_predict = np.array(prediction)
         # append both
-        mag_predict = np.append(arr_magnitude, arr_predict)
         self.plot_widget.clear()
-        self.plot_widget.plot(self.magnitude)
+        self.plot_widget.setYRange(min(self.magnitude), max(self.magnitude))
+        self.plot_widget.plot(self.time, self.magnitude)
         
         mag_arr = np.array(split_magnitude)
-        time_inter = np.linspace(0,int(len(self.magnitude)* percent_data / 100), len(mag_arr))
-        self.fitted=np.poly1d(np.polyfit(time_inter,mag_arr,degree))
-        self.interrpolation = self.fitted(time_inter)
+        # time_inter = np.linspace(0,int(len(self.magnitude)* percent_data / 100), len(mag_arr))
+        self.fitted=np.poly1d(np.polyfit(split_time,mag_arr,degree))
+        self.interrpolation = self.fitted(split_time)
         self.curvePen = pg.mkPen(color=(255, 0, 0), style=QtCore.Qt.DashLine)
         # print(len(time_inter))
         # print(len(mag_arr))
 
-        self.plot_widget.plot(time_inter, self.interrpolation,pen=self.curvePen )
+        self.plot_widget.plot(split_time, self.interrpolation,pen=self.curvePen )
      
         time_arr = np.array(self.time)
         # prediction time - blue
-        time_pre = np.linspace(int(len(self.magnitude)* percent_data / 100),len(self.magnitude), int(len(self.magnitude)* percent_predict / 100))
+        
         # interpolation time - red
         self.curPen = pg.mkPen(color=(255, 0, 255), style=QtCore.Qt.DashLine)
-        self.plot_widget.plot(time_pre, arr_predict, pen = self.curPen) # self.time, 
+        self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen) # self.time, 
         
     
 
