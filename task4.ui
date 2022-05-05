@@ -517,7 +517,7 @@ border-radius: 3px;
      </property>
     </item>
    </widget>
-   <widget class="QLCDNumber" name="percentage_display_2">
+   <widget class="QLCDNumber" name="degree_display">
     <property name="geometry">
      <rect>
       <x>560</x>

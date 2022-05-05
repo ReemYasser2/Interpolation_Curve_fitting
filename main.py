@@ -1,3 +1,4 @@
+from math import fabs
 from pickle import GLOBAL
 from ssl import ALERT_DESCRIPTION_NO_RENEGOTIATION
 from PyQt5 import QtWidgets, uic, QtCore
@@ -182,11 +183,59 @@ class MainWindow(QtWidgets.QMainWindow):
     def choose_type(self):
         if int(self.interpolation_type.currentIndex()) == 0:
             self.fit_button.clicked.connect(self.poly_interpolate) 
+            self.fit_button.clicked.connect(self.cubic) 
+            self.degree_slider.setVisible(True)
+            self.degree_display.setVisible(True) 
+            self.degree_label.setVisible(True)
+            self.show_widgets()
+            
+          
         elif int(self.interpolation_type.currentIndex()) == 1:
             self.fit_button.clicked.connect(self.cubic) 
+            self.degree_slider.setVisible(False)
+            self.degree_display.setVisible(False) 
+            self.degree_label.setVisible(False)
+            self.hide_widgets()
+           
+
         elif int(self.interpolation_type.currentIndex()) == 2:
             self.fit_button.clicked.connect(self.spline)
+            self.fit_button.clicked.connect(self.cubic) 
+            self.degree_slider.setVisible(True)
+            self.degree_display.setVisible(True) 
+            self.degree_label.setVisible(True)
+            self.hide_widgets()
+            
+
+    def hide_widgets(self):
         
+            self.num_chunks_label.setVisible(False)
+            self.num_chunks_input.setVisible(False)
+            self.overlap_label.setVisible(False)
+            self.overlap_input.setVisible(False)
+            self.error_map.setVisible(False)
+            self.start_button.setVisible(False)
+            self.progress_bar.setVisible(False)
+            self.error_label.setVisible(False)
+            self.x_axis_label.setVisible(False)
+            self.y_axis_label.setVisible(False)
+            self.x_dropdown.setVisible(False)
+            self.y_dropdown.setVisible(False) 
+
+    def show_widgets(self):
+            self.num_chunks_label.setVisible(True)
+            self.num_chunks_input.setVisible(True)
+            self.overlap_label.setVisible(True)
+            self.overlap_input.setVisible(True)
+            self.error_map.setVisible(True)
+            self.start_button.setVisible(True)
+            self.progress_bar.setVisible(True)
+            self.error_label.setVisible(True)
+            self.x_axis_label.setVisible(True)
+            self.y_axis_label.setVisible(True)
+            self.x_dropdown.setVisible(True)
+            self.y_dropdown.setVisible(True) 
+            
 
     def extrapolation(self):
         percent_data = self.percentage_slider.value()
