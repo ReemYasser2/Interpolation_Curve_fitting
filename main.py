@@ -33,7 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.overlap = 0
         self.chunk_size = len(self.magnitude)
         self.action_open.triggered.connect(self.open) 
-        self.interpolation_type.currentIndexChanged.connect(self.choose_type)
+        self.interpolation_type.activated.connect(self.choose_type)
         # self.fit_button.clicked.connect(self.poly_interpolate) 
         # self.spline_button.clicked.connect(self.spline) 
         # self.cubic_button.clicked.connect(self.cubic)
@@ -63,15 +63,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.time = data.values[:, 0] # the data is read in case it is needed later but won't be used in plotting, for now at least
         self.magnitude = data.values[:, 1]
         # plot the data
-        # time = np.linspace(0,len(self.magnitude),len(self.magnitude))
-        self.plot_widget.clear() # clearing hear not in plotting function because we only want to clear when opening a new file
-        self.plot_widget.plot(self.time, self.magnitude)  
+        self.plotting()
          
 
 
-    # def plotting(self):
-           
-    #    self.plot_widget.plot(self.time, self.magnitude)
+    def plotting(self):
+       self.plot_widget.clear()  
+       self.plot_widget.plot(self.time, self.magnitude)
+       
 
     
     def render_latex(self,formula, fontsize=12, dpi=300, format_='svg'):
@@ -102,12 +101,13 @@ class MainWindow(QtWidgets.QMainWindow):
     
 
     def spline(self):
-        # self.plot_widget.clear()
+        
         deg= self.degree_slider.value()
         self.time_array = np.array(self.time)
         self.magnitude_array = np.array(self.magnitude)
 
         if deg % 2 == 0 and deg != 2 and int(self.interpolation_type.currentIndex()) == 2:
+            self.plotting()
             
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
@@ -123,14 +123,13 @@ class MainWindow(QtWidgets.QMainWindow):
         X_=np.linspace(self.time_array.min(), self.time_array.max(), 500)
      
         Y_ = make_interp_spline(self.time_array , self.magnitude_array, k= deg)(X_)
-        self.plot_widget.clear()
-        self.plot_widget.plot(self.time, self.magnitude)  
+        self.plotting()  
         self.plot_widget.plot(X_, Y_, pen='b')
        
 
 
     def cubic(self):
-        # self.plot_widget.clear()
+       
         self.degree= self.degree_slider.value()
         self.time_array = np.array(self.time)
         self.magnitude_array = np.array(self.magnitude)
@@ -140,8 +139,7 @@ class MainWindow(QtWidgets.QMainWindow):
      
         Y_ = make_interp_spline(self.time_array , self.magnitude_array)(X_)
         self.equation()
-        self.plot_widget.clear()
-        self.plot_widget.plot(self.time, self.magnitude)  
+        self.plotting()  
        
         self.plot_widget.plot(X_, Y_, pen='y')
     
@@ -170,14 +168,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
             self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         
-        self.plot_widget.clear()
-        self.plot_widget.plot(self.time, self.magnitude)  
+        self.plotting() 
 
         for i in range(self.chunk_num):
             
             self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], self.degree))
-            self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)    #self.time_chunks[i], 
-            #print(self.Interpolation(self.time_chunks[i]))
+            self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)   
+           
     
     def choose_type(self):
         if int(self.interpolation_type.currentIndex()) == 0:
@@ -249,9 +246,9 @@ class MainWindow(QtWidgets.QMainWindow):
         prediction = np.polyval(coeff, time_predict)
         arr_predict = np.array(prediction)
        
-        self.plot_widget.clear()
+       
         self.plot_widget.setYRange(min(self.magnitude), max(self.magnitude))
-        self.plot_widget.plot(self.time, self.magnitude)
+        self.plotting()
         
         mag_arr = np.array(split_magnitude)
         # time_inter = np.linspace(0,int(len(self.magnitude)* percent_data / 100), len(mag_arr))
@@ -268,7 +265,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         # interpolation time - red
         self.curPen = pg.mkPen(color=(255, 0, 255), style=QtCore.Qt.DashLine)
-        self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen) # self.time, 
+        self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen)
         
     
 
