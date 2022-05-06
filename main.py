@@ -40,8 +40,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.interpolation_type.setCurrentIndex(0)
         self.predict_button.clicked.connect(self.extrapolation) 
         self.degree_slider.valueChanged.connect(self.equation) 
-        self.percentage_display_2= self.findChild(QLCDNumber, "percentage_display_2")
-        self.degree_slider.valueChanged.connect(lambda: self.percentage_display_2.display(self.degree_slider.value()))
+
+        self.degree_display= self.findChild(QLCDNumber, "degree_display")
+        self.degree_slider.valueChanged.connect(lambda: self.degree_display.display(self.degree_slider.value()))
         self.percentage_slider.valueChanged.connect(self.equation) 
         self.percentage_display= self.findChild(QLCDNumber, "percentage_display")
         self.percentage_slider.valueChanged.connect(lambda: self.percentage_display.display(self.percentage_slider.value()))
@@ -85,7 +86,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def equation(self):
         global degree
-        degree = self.degree_slider.value()
+        if int(self.interpolation_type.currentIndex()) == 1: #cubic interpolation
+            degree = 3
+        else:
+            degree = self.degree_slider.value()
+
         p = np.polyfit(self.time, self.magnitude, degree)
         xSymbols = symbols("x")
         poly = sum(S("{:6.2f}".format(v))*xSymbols**i for i, v in enumerate(p[::1]))
@@ -94,8 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
         qp = QPixmap()
         qp.loadFromData(image_bytes)
         self.equation_label.setPixmap(qp)
-        
-
+    
 
     def spline(self):
         # self.plot_widget.clear()
@@ -114,10 +118,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if deg % 2 == 0 and deg != 2:
             deg -= 1
-
-            
- 
-       
  
         # Plotting the Graph
         X_=np.linspace(self.time_array.min(), self.time_array.max(), 500)
@@ -125,7 +125,6 @@ class MainWindow(QtWidgets.QMainWindow):
         Y_ = make_interp_spline(self.time_array , self.magnitude_array, k= deg)(X_)
         self.plot_widget.clear()
         self.plot_widget.plot(self.time, self.magnitude)  
-        
         self.plot_widget.plot(X_, Y_, pen='b')
        
 
@@ -135,12 +134,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.degree= self.degree_slider.value()
         self.time_array = np.array(self.time)
         self.magnitude_array = np.array(self.magnitude)
- 
- 
+
         # Plotting the Graph
         X_=np.linspace(self.time_array.min(), self.time_array.max(), 500)
      
         Y_ = make_interp_spline(self.time_array , self.magnitude_array)(X_)
+        self.equation()
         self.plot_widget.clear()
         self.plot_widget.plot(self.time, self.magnitude)  
        
@@ -183,7 +182,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def choose_type(self):
         if int(self.interpolation_type.currentIndex()) == 0:
             self.fit_button.clicked.connect(self.poly_interpolate) 
-            self.fit_button.clicked.connect(self.cubic) 
             self.degree_slider.setVisible(True)
             self.degree_display.setVisible(True) 
             self.degree_label.setVisible(True)
@@ -199,8 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
            
 
         elif int(self.interpolation_type.currentIndex()) == 2:
-            self.fit_button.clicked.connect(self.spline)
-            self.fit_button.clicked.connect(self.cubic) 
+            self.fit_button.clicked.connect(self.spline) 
             self.degree_slider.setVisible(True)
             self.degree_display.setVisible(True) 
             self.degree_label.setVisible(True)
@@ -240,24 +237,18 @@ class MainWindow(QtWidgets.QMainWindow):
     def extrapolation(self):
         percent_data = self.percentage_slider.value()
         #percent_predict = 100 - percent_data
-        # cut the list into a certain percentage of data according to the slider
-        # split_time = self.time[:int(len(self.time) * percent_data / 100)]
-        # split_magnitude = self.magnitude[:int(len(self.magnitude) * percent_data / 100)]
-        # for i in range(self.chunk_num):
+        
         split_time = self.time[0:int(len(self.time) * percent_data / 100)]
         split_magnitude = self.magnitude[0:int(len(self.magnitude) * percent_data / 100)]
         time_predict =  self.time[int(len(self.time) * percent_data / 100):(len(self.time))]
         # convert lists to arrays
         # arr_time = np.array(split_time) 
         # arr_magnitude = np.array(split_magnitude)
-        #prediction array
-        # time_predict = np.linspace(int(len(self.magnitude)* percent_data / 100),len(self.magnitude), int(len(self.magnitude)* percent_predict / 100))
-        print(split_time)
-        print(time_predict)
+        
         coeff = np.polyfit(split_time, split_magnitude, degree)
         prediction = np.polyval(coeff, time_predict)
         arr_predict = np.array(prediction)
-        # append both
+       
         self.plot_widget.clear()
         self.plot_widget.setYRange(min(self.magnitude), max(self.magnitude))
         self.plot_widget.plot(self.time, self.magnitude)
