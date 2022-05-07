@@ -184,14 +184,15 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.plotting() 
         
+        # self.Interpolated = np.poly1d(np.polyfit(self.time_chunks, self.mag_chunks, self.degree))
 
         for i in range(self.chunk_num):
             
             self.Interpolation = np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], self.degree))
-            self.interpolated.append(self.Interpolation) # ???
+            
             self.plot_widget.plot(self.time_chunks[i], self.Interpolation(self.time_chunks[i]), pen=self.curvePen)   
             
-        return self.interpolated   # ???
+        # return self.interpolated  
     
     def choose_type(self):
         if int(self.interpolation_type.currentIndex()) == 0:
@@ -288,7 +289,13 @@ class MainWindow(QtWidgets.QMainWindow):
     #     return error
 
     def create_error_map(self):
+
         self.poly_interpolate()
+
+        original_interpolation=np.poly1d(np.polyfit(self.time_chunks, self.mag_chunks, self.degree))
+        rounded_error=round(mean_absolute_error(self.mag_chunks, original_interpolation(self.time_chunks))*100,2)
+
+
         # self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         # self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         x_axis = self.x_dropdown.currentText()
@@ -354,7 +361,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     # calculate_error=((self.mag_chunks[j]-degrees(self.time_chunks[j])/self.mag_chunks[j])
                     # errors.append(calculate_error)
 
-            rounded_error = round(np.average(errors)*100,2)
+            # rounded_error = round(np.average(errors)*100,2)
             errors_2d = np.reshape(errors, (value_y, value_x))
 
             self.error_map.canvas.axes.clear()        
