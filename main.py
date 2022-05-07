@@ -48,6 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.percentage_slider.valueChanged.connect(lambda: self.percentage_display.display(self.percentage_slider.value()))
         self.time_chunks = []
         self.mag_chunks = []
+        self.extrapolation_check = 0
 
         
 
@@ -101,47 +102,55 @@ class MainWindow(QtWidgets.QMainWindow):
     
 
     def spline(self):
-        
+        percent_data = self.percentage_slider.value()
         deg= self.degree_slider.value()
         self.time_array = np.array(self.time)
         self.magnitude_array = np.array(self.magnitude)
 
         if deg % 2 == 0 and deg != 2 and int(self.interpolation_type.currentIndex()) == 2:
             self.plotting()
-            
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
             msg.setText("Error!")
-            msg.setInformativeText('Spline degree must be odd or 2! \n It has been reset to degree - 1')
+            msg.setInformativeText('Spline degree must be odd or 2! \n It has been reset to (degree - 1)')
             msg.setWindowTitle("Error")
             msg.exec_()
-
         if deg % 2 == 0 and deg != 2:
             deg -= 1
- 
-        # Plotting the Graph
+        
         X_=np.linspace(self.time_array.min(), self.time_array.max(), 500)
+
+        if self.extrapolation_check ==2:
+            data_time = X_[0:int(len(X_) * percent_data / 100)]
+        else:
+            data_time = X_
      
-        Y_ = make_interp_spline(self.time_array , self.magnitude_array, k= deg)(X_)
+        Y_ = make_interp_spline(self.time_array , self.magnitude_array, k= deg)(data_time)
         self.plotting()  
-        self.plot_widget.plot(X_, Y_, pen='b')
+        self.extrapolation_check = 0
+        self.plot_widget.plot(data_time, Y_, pen='b')
        
 
 
     def cubic(self):
-       
-        self.degree= self.degree_slider.value()
+        percent_data = self.percentage_slider.value()
+        # self.degree= self.degree_slider.value()
         self.time_array = np.array(self.time)
         self.magnitude_array = np.array(self.magnitude)
 
         # Plotting the Graph
-        X_=np.linspace(self.time_array.min(), self.time_array.max(), 500)
+        X_= np.linspace(self.time_array.min(), self.time_array.max(), 500)
+
+        if self.extrapolation_check ==1:
+            data_time = X_[0:int(len(X_) * percent_data / 100)]
+        else:
+            data_time = X_
      
-        Y_ = make_interp_spline(self.time_array , self.magnitude_array)(X_)
+        Y_ = make_interp_spline(self.time_array , self.magnitude_array)(data_time)
         self.equation()
         self.plotting()  
-       
-        self.plot_widget.plot(X_, Y_, pen='y')
+        self.extrapolation_check = 0
+        self.plot_widget.plot(data_time, Y_, pen='y')
     
      
         
@@ -236,35 +245,33 @@ class MainWindow(QtWidgets.QMainWindow):
         #percent_predict = 100 - percent_data
         
         split_time = self.time[0:int(len(self.time) * percent_data / 100)]
-        split_magnitude = self.magnitude[0:int(len(self.magnitude) * percent_data / 100)]
         time_predict =  self.time[int(len(self.time) * percent_data / 100):(len(self.time))]
-        # convert lists to arrays
-        # arr_time = np.array(split_time) 
-        # arr_magnitude = np.array(split_magnitude)
-        
+        split_magnitude = self.magnitude[0:int(len(self.magnitude) * percent_data / 100)]
+
         coeff = np.polyfit(split_time, split_magnitude, degree)
         prediction = np.polyval(coeff, time_predict)
         arr_predict = np.array(prediction)
        
-       
         self.plot_widget.setYRange(min(self.magnitude), max(self.magnitude))
         self.plotting()
-        
-        mag_arr = np.array(split_magnitude)
-        # time_inter = np.linspace(0,int(len(self.magnitude)* percent_data / 100), len(mag_arr))
-        self.fitted=np.poly1d(np.polyfit(split_time,mag_arr,degree))
-        self.interrpolation = self.fitted(split_time)
-        self.curvePen = pg.mkPen(color=(255, 0, 0), style=QtCore.Qt.DashLine)
-        # print(len(time_inter))
-        # print(len(mag_arr))
 
-        self.plot_widget.plot(split_time, self.interrpolation,pen=self.curvePen )
-     
-        time_arr = np.array(self.time)
-        # prediction time - blue
-        
-        # interpolation time - red
+        self.curvePen = pg.mkPen(color=(255, 0, 0), style=QtCore.Qt.DashLine)
         self.curPen = pg.mkPen(color=(255, 0, 255), style=QtCore.Qt.DashLine)
+
+        if int(self.interpolation_type.currentIndex()) == 0:
+
+            mag_arr = np.array(split_magnitude)
+            self.fitted=np.poly1d(np.polyfit(split_time,mag_arr,degree))
+            self.interrpolation = self.fitted(split_time)
+            self.plot_widget.plot(split_time, self.interrpolation,pen=self.curvePen)
+        elif int(self.interpolation_type.currentIndex()) == 1:
+            self.extrapolation_check = 1
+            self.cubic()
+        elif int(self.interpolation_type.currentIndex()) == 2:
+            self.extrapolation_check = 2
+            self.spline()
+            
+   
         self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen)
         
     
