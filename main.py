@@ -281,11 +281,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen)          
         
     
-    def computeError(self,y_interpolated,y_original):
-        # Compute the error
-        error = np.average(abs((y_interpolated - y_original)/y_original))
-        print(error)
-        return error
+    # def computeError(self,y_interpolated,y_original):
+    #     # Compute the error
+    #     error = np.average(abs((y_interpolated - y_original)/y_original))
+    #     print(error)
+    #     return error
 
     def create_error_map(self):
         self.poly_interpolate()
@@ -293,50 +293,36 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         x_axis = self.x_dropdown.currentText()
         y_axis = self.y_dropdown.currentText()
+
         if(x_axis==y_axis):
             
             ctypes.windll.user32.MessageBoxW(0, "Please change one of the axes", "ERROR", 16)
 
-
-
         if not (x_axis==y_axis):
-            x_counter = 0
-            y_counter = 0
+
             if(x_axis == "Number of Chunks"):
                 value_x = self.chunk_num
-                x_counter = self.chunk_num
             elif(x_axis == "Polynomial Order"):
                 value_x = self.degree
-                x_counter = self.degree + 1
             elif(x_axis == "Overlap"):
                 value_x = self.overlap
-                x_counter = self.overlap + 1
                 
             
             if(y_axis == "Number of Chunks"):
                 value_y = self.chunk_num
-                y_counter = self.chunk_num
             elif(y_axis == "Polynomial Order"):
                 value_y = self.degree
-                y_counter = self.degree + 1
             elif(y_axis == "Overlap"):
                 value_y = self.overlap
-                y_counter = self.overlap + 1
-            #make an error message if the user chose the x and y axes to be the same
             
-            x_range =range(1,value_x+1 ) 
+            x_range =range(1, value_x+1 ) 
             y_range =range(1, value_y+1 )
 
-
-            original_interpolation = np.poly1d(np.polyfit(self.time, self.magnitude, self.degree))
-            rounded_error = round(self.computeError(self.magnitude, original_interpolation(self.magnitude)),2)
             errors=[]
-            # degrees=[]
-            print(value_x)
-            print(value_y)
+
+            
 
             for i in y_range:
-                # degrees = append.np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], i))
                 currentChunk    = self.chunk_num
                 currentDegree   = self.degree
                 currentOverlap  = self.overlap
@@ -356,7 +342,6 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif(x_axis == "Overlap"):
                         currentOverlap = j
 
-                    print(currentOverlap)
                     if(currentOverlap>=0 and currentOverlap<=25):
                         tempOverlapsizee    = int((currentOverlap/100)*((len(self.time_array))/self.chunk_num))
                         tempTime_chunks     = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-tempOverlapsizee))
@@ -369,12 +354,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     # calculate_error=((self.mag_chunks[j]-degrees(self.time_chunks[j])/self.mag_chunks[j])
                     # errors.append(calculate_error)
 
+            rounded_error = round(np.average(errors)*100,2)
             errors_2d = np.reshape(errors, (value_y, value_x))
 
             self.error_map.canvas.axes.clear()        
             self.error_map.canvas.axes.tick_params(axis="x", colors="black")
             self.error_map.canvas.axes.tick_params(axis="y", colors="black")        
-            self.error_map.canvas.axes.set_title("Percentage Error = " + str(rounded_error) + ' %', color='r', fontsize=15)
+            self.error_map.canvas.axes.set_title("Percentage Error = " + str(rounded_error) + ' %', color='black', fontsize=15)
             
             edit_axes = make_axes_locatable(self.error_map.canvas.axes).append_axes("right", size="5%", pad="2%")
             edit_axes.tick_params(axis="x", colors="black")
@@ -382,7 +368,7 @@ class MainWindow(QtWidgets.QMainWindow):
             
             data = self.error_map.canvas.axes.contourf(x_range,y_range,errors_2d)
             self.error_map.canvas.axes.figure.colorbar(data , cax=edit_axes)
-            self.error_map.canvas.draw()   
+            self.error_map.canvas.draw()
 
 app = QtWidgets.QApplication(sys.argv)
 w = MainWindow()
