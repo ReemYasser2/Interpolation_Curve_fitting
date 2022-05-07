@@ -20,6 +20,8 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline
 from sklearn.metrics import mean_absolute_error
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+from tkinter import *
+import tkinter.messagebox
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -292,68 +294,95 @@ class MainWindow(QtWidgets.QMainWindow):
         # self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         x_axis = self.x_dropdown.currentText()
         y_axis = self.y_dropdown.currentText()
-        if(x_axis == "Number of Chunks"):
-            value_x = self.chunk_num
-        elif(x_axis == "Fitting Polynomial Order"):
-            value_x = self.degree
-        elif(x_axis == "Overlapping Between Chunks"):
-            value_x = self.overlap
-        
-        if(y_axis == "Number of Chunks"):
-            value_y = self.chunk_num
-        elif(y_axis == "Polynomial Order"):
-            value_y = self.degree
-        elif(x_axis == "Overlapping Between Chunks"):
-            value_y = self.overlap
-        #make an error message if the user chose the x and y axes to be the same
-        
-        x_range =range(1,value_x+1 ) 
-        y_range =range(1, value_y+1 )
+        if(x_axis==y_axis):
+            tkinter.messagebox.showinfo("ERROR",  "Please change one of the axes")
 
 
-        original_interpolation = np.poly1d(np.polyfit(self.time, self.magnitude, self.degree))
-        rounded_error = round(self.computeError(self.magnitude, original_interpolation(self.magnitude)),2)
-        errors=[]
-        # degrees=[]
-        print(value_x)
-        print(value_y)
 
-        for i in range(1,degree+1):
-            # degrees = append.np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], i))
-            for j in range(self.chunk_num):
+        if not (x_axis==y_axis):
+            x_counter = 0
+            y_counter = 0
+            if(x_axis == "Number of Chunks"):
+                value_x = self.chunk_num
+                x_counter = self.chunk_num
+            elif(x_axis == "Polynomial Order"):
+                value_x = self.degree
+                x_counter = self.degree + 1
+            elif(x_axis == "Overlap"):
+                value_x = self.overlap
+                x_counter = self.overlap + 1
                 
-                degrees = np.poly1d(np.polyfit(self.time_chunks[j], self.mag_chunks[j], i))
-                errors.append(mean_absolute_error(self.mag_chunks[j],degrees(self.time_chunks[j])))
-
-                # to get errors by formula:
-                # calculate_error=((self.mag_chunks[j]-degrees(self.time_chunks[j])/self.mag_chunks[j])
-                # errors.append(calculate_error)
-
-
-
-        errors_2d = np.reshape(errors, (value_y, value_x))
-
-
-        # data=plt.contourf(x_range,y_range,errors_2d)
-
-        # self.error_map.plt.imshow( data , cmap = 'autumn' , interpolation = 'nearest' )
-  
-        # self.plt.title( "2-D Heat Map" )
-        # self.plt.show()
+            
+            if(y_axis == "Number of Chunks"):
+                value_y = self.chunk_num
+                y_counter = self.chunk_num
+            elif(y_axis == "Polynomial Order"):
+                value_y = self.degree
+                y_counter = self.degree + 1
+            elif(y_axis == "Overlap"):
+                value_y = self.overlap
+                y_counter = self.overlap + 1
+            #make an error message if the user chose the x and y axes to be the same
+            
+            x_range =range(1,value_x+1 ) 
+            y_range =range(1, value_y+1 )
 
 
-        self.error_map.canvas.axes.clear()        
-        self.error_map.canvas.axes.tick_params(axis="x", colors="black")
-        self.error_map.canvas.axes.tick_params(axis="y", colors="black")        
-        self.error_map.canvas.axes.set_title("Percentage Error = " + str(rounded_error) + ' %', color='r', fontsize=15)
-        
-        edit_axes = make_axes_locatable(self.error_map.canvas.axes).append_axes("right", size="5%", pad="2%")
-        edit_axes.tick_params(axis="x", colors="black")
-        edit_axes.tick_params(axis="y", colors="black")
-         
-        data = self.error_map.canvas.axes.contourf(x_range,y_range,errors_2d)
-        self.error_map.canvas.axes.figure.colorbar(data , cax=edit_axes)
-        self.error_map.canvas.draw()   
+            original_interpolation = np.poly1d(np.polyfit(self.time, self.magnitude, self.degree))
+            rounded_error = round(self.computeError(self.magnitude, original_interpolation(self.magnitude)),2)
+            errors=[]
+            # degrees=[]
+            print(value_x)
+            print(value_y)
+
+            for i in y_range:
+                # degrees = append.np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], i))
+                currentChunk    = self.chunk_num
+                currentDegree   = self.degree
+                currentOverlap  = self.overlap
+            
+                if(y_axis == "Number of Chunks"):
+                    currentChunk = i - 1
+                elif(y_axis == "Polynomial Order"):
+                    currentDegree = i
+                elif(y_axis == "Overlap"):
+                    currentOverlap = i
+                
+                for j in x_range:
+                    if(x_axis == "Number of Chunks"):
+                        currentChunk = j - 1
+                    elif(x_axis == "Polynomial Order"):
+                        currentDegree = j
+                    elif(x_axis == "Overlap"):
+                        currentOverlap = j
+
+                    print(currentOverlap)
+                    if(currentOverlap>=0 and currentOverlap<=25):
+                        tempOverlapsizee    = int((currentOverlap/100)*((len(self.time_array))/self.chunk_num))
+                        tempTime_chunks     = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-tempOverlapsizee))
+                        tempMag_chunks      = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-tempOverlapsizee))
+                
+                    degrees = np.poly1d(np.polyfit(tempTime_chunks[currentChunk], tempMag_chunks[currentChunk], currentDegree))
+                    errors.append(mean_absolute_error(tempMag_chunks[currentChunk],degrees(tempTime_chunks[currentChunk])))
+
+                    # to get errors by formula:
+                    # calculate_error=((self.mag_chunks[j]-degrees(self.time_chunks[j])/self.mag_chunks[j])
+                    # errors.append(calculate_error)
+
+            errors_2d = np.reshape(errors, (value_y, value_x))
+
+            self.error_map.canvas.axes.clear()        
+            self.error_map.canvas.axes.tick_params(axis="x", colors="black")
+            self.error_map.canvas.axes.tick_params(axis="y", colors="black")        
+            self.error_map.canvas.axes.set_title("Percentage Error = " + str(rounded_error) + ' %', color='r', fontsize=15)
+            
+            edit_axes = make_axes_locatable(self.error_map.canvas.axes).append_axes("right", size="5%", pad="2%")
+            edit_axes.tick_params(axis="x", colors="black")
+            edit_axes.tick_params(axis="y", colors="black")
+            
+            data = self.error_map.canvas.axes.contourf(x_range,y_range,errors_2d)
+            self.error_map.canvas.axes.figure.colorbar(data , cax=edit_axes)
+            self.error_map.canvas.draw()   
 
 app = QtWidgets.QApplication(sys.argv)
 w = MainWindow()
