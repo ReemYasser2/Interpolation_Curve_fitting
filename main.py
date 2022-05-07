@@ -20,8 +20,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline
 from sklearn.metrics import mean_absolute_error
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-from tkinter import *
-import tkinter.messagebox
+import ctypes
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -295,7 +294,8 @@ class MainWindow(QtWidgets.QMainWindow):
         x_axis = self.x_dropdown.currentText()
         y_axis = self.y_dropdown.currentText()
         if(x_axis==y_axis):
-            tkinter.messagebox.showinfo("ERROR",  "Please change one of the axes")
+            
+            ctypes.windll.user32.MessageBoxW(0, "Please change one of the axes", "ERROR", 16)
 
 
 
