@@ -340,7 +340,7 @@ QPushButton:pressed {
       <string notr="true">background-color: rgb(40, 40, 40);</string>
      </property>
     </widget>
-    <widget class="PlotWidget" name="error_map" native="true">
+    <widget class="errormapwidget" name="error_map" native="true">
      <property name="minimumSize">
       <size>
        <width>588</width>
@@ -640,7 +640,7 @@ QPushButton:pressed {
      <x>0</x>
      <y>0</y>
      <width>1277</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -663,6 +663,12 @@ QPushButton:pressed {
    <class>PlotWidget</class>
    <extends>QWidget</extends>
    <header location="global">pyqtgraph.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>errormapwidget</class>
+   <extends>QWidget</extends>
+   <header location="global">errormapwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
