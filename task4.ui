@@ -225,7 +225,7 @@ background: qlineargradient(x1: 0, y1: 0.5, x2: 1, y2: 0.5, stop: 0 rgb(4, 1, 50
 </string>
     </property>
     <property name="value">
-     <number>24</number>
+     <number>0</number>
     </property>
    </widget>
    <widget class="QLabel" name="y_axis_label">
@@ -431,24 +431,6 @@ border-radius: 3px;
      </font>
     </property>
    </widget>
-   <widget class="QLabel" name="error_label">
-    <property name="geometry">
-     <rect>
-      <x>640</x>
-      <y>60</y>
-      <width>561</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>9</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Error Percentage %</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="x_axis_label">
     <property name="geometry">
      <rect>
@@ -569,7 +551,7 @@ QPushButton:pressed {
      <rect>
       <x>110</x>
       <y>60</y>
-      <width>511</width>
+      <width>1101</width>
       <height>21</height>
      </rect>
     </property>
@@ -580,32 +562,6 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>Equation</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="spline_button">
-    <property name="geometry">
-     <rect>
-      <x>920</x>
-      <y>640</y>
-      <width>93</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Spline</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="cubic_button">
-    <property name="geometry">
-     <rect>
-      <x>1030</x>
-      <y>640</y>
-      <width>93</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Cubic</string>
     </property>
    </widget>
    <widget class="QComboBox" name="interpolation_type">
@@ -640,7 +596,7 @@ QPushButton:pressed {
      <x>0</x>
      <y>0</y>
      <width>1277</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

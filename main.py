@@ -1,6 +1,7 @@
 from math import ceil, fabs
 from pickle import GLOBAL
 from ssl import ALERT_DESCRIPTION_NO_RENEGOTIATION
+from threading import Thread
 from PyQt5 import QtWidgets, uic, QtCore
 from PyQt5.QtWidgets import QSlider, QLCDNumber
 import pyqtgraph as pg
@@ -20,9 +21,12 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline
 from sklearn.metrics import mean_absolute_error
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+import logging
+import time 
 import ctypes
 
-
+plt.style.use('dark_background')
+working = False
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
@@ -38,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.interpolated=[]
         self.action_open.triggered.connect(self.open) 
         self.interpolation_type.activated.connect(self.choose_type)
-        self.start_button.clicked.connect(self.create_error_map)
+        self.start_button.clicked.connect(self.thread)
         # self.fit_button.clicked.connect(self.poly_interpolate) 
         # self.spline_button.clicked.connect(self.spline) 
         # self.cubic_button.clicked.connect(self.cubic)
@@ -55,9 +59,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mag_chunks = []
         self.extrapolation_check = 0
 
-        
-
-
     def open(self):
         # open any csv file
         files_name = QtWidgets.QFileDialog.getOpenFileName(self, 'Open only CSV ', os.getenv('HOME'), "csv(*.csv)")
@@ -70,15 +71,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.magnitude = data.values[:, 1]
         # plot the data
         self.plotting()
-         
-
 
     def plotting(self):
        self.plot_widget.clear()  
        self.plot_widget.plot(self.time, self.magnitude)
        
-
-    
     def render_latex(self,formula, fontsize=12, dpi=300, format_='svg'):
         """Renders LaTeX formula into image.
         """
@@ -105,7 +102,6 @@ class MainWindow(QtWidgets.QMainWindow):
         qp.loadFromData(image_bytes)
         self.equation_label.setPixmap(qp)
     
-
     def spline(self):
         percent_data = self.percentage_slider.value()
         deg= self.degree_slider.value()
@@ -135,8 +131,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.extrapolation_check = 0
         self.plot_widget.plot(data_time, Y_, pen='b')
        
-
-
     def cubic(self):
         percent_data = self.percentage_slider.value()
         # self.degree= self.degree_slider.value()
@@ -156,9 +150,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotting()  
         self.extrapolation_check = 0
         self.plot_widget.plot(data_time, Y_, pen='y')
-    
-     
-        
+      
     def split_chunks(self):
         # converting to arrays if needed
         self.time_array = np.array(self.time)
@@ -217,7 +209,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.degree_label.setVisible(True)
             self.hide_widgets()
             
-
     def hide_widgets(self):
         
             self.num_chunks_label.setVisible(False)
@@ -227,7 +218,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.error_map.setVisible(False)
             self.start_button.setVisible(False)
             self.progress_bar.setVisible(False)
-            self.error_label.setVisible(False)
             self.x_axis_label.setVisible(False)
             self.y_axis_label.setVisible(False)
             self.x_dropdown.setVisible(False)
@@ -241,13 +231,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.error_map.setVisible(True)
             self.start_button.setVisible(True)
             self.progress_bar.setVisible(True)
-            self.error_label.setVisible(True)
             self.x_axis_label.setVisible(True)
             self.y_axis_label.setVisible(True)
             self.x_dropdown.setVisible(True)
             self.y_dropdown.setVisible(True) 
             
-
     def extrapolation(self):
         percent_data = self.percentage_slider.value()
         #percent_predict = 100 - percent_data
@@ -279,50 +267,70 @@ class MainWindow(QtWidgets.QMainWindow):
             self.extrapolation_check = 2
             self.spline() 
         self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen)          
-        
-    
-    # def computeError(self,y_interpolated,y_original):
-    #     # Compute the error
-    #     error = np.average(abs((y_interpolated - y_original)/y_original))
-    #     print(error)
-    #     return error
+          
+    def computeError(self,y_interpolated,y_original):
+        # Compute the error
+        error = np.average(abs((y_interpolated - y_original)/y_original))
+        print(error)
+        return error
+
+    def thread(self):
+        t1=Thread(target=self.create_error_map)
+        t1.start()
+         
+            
+            
 
     def create_error_map(self):
         self.poly_interpolate()
+        self.start_button.setText("Cancel")
+
         # self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         # self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         x_axis = self.x_dropdown.currentText()
         y_axis = self.y_dropdown.currentText()
-
-        if(x_axis==y_axis):
-            
+        if(x_axis==y_axis):            
             ctypes.windll.user32.MessageBoxW(0, "Please change one of the axes", "ERROR", 16)
 
         if not (x_axis==y_axis):
-
+           
             if(x_axis == "Number of Chunks"):
                 value_x = self.chunk_num
+              
             elif(x_axis == "Polynomial Order"):
                 value_x = self.degree
+                
             elif(x_axis == "Overlap"):
                 value_x = self.overlap
+                
                 
             
             if(y_axis == "Number of Chunks"):
                 value_y = self.chunk_num
+                
             elif(y_axis == "Polynomial Order"):
                 value_y = self.degree
+               
             elif(y_axis == "Overlap"):
                 value_y = self.overlap
+               
+            #make an error message if the user chose the x and y axes to be the same
             
-            x_range =range(1, value_x+1 ) 
-            y_range =range(1, value_y+1 )
+            x_range = range(1,value_x+1 ) 
+            y_range = range(1, value_y+1 )
 
+
+            original_interpolation=np.poly1d(np.polyfit(self.time, self.magnitude, self.degree))
+            rounded_error=round(mean_absolute_error(self.magnitude, original_interpolation(self.time))*100,2)
             errors=[]
-
-            
-
+            # degrees=[]
+            print(value_y)
+            print(value_x)
+            counter = 0
+            increament = int(100 / ((value_y)*(value_x)))
+            print(increament)
             for i in y_range:
+                # degrees = append.np.poly1d(np.polyfit(self.time_chunks[i], self.mag_chunks[i], i))
                 currentChunk    = self.chunk_num
                 currentDegree   = self.degree
                 currentOverlap  = self.overlap
@@ -346,29 +354,36 @@ class MainWindow(QtWidgets.QMainWindow):
                         tempOverlapsizee    = int((currentOverlap/100)*((len(self.time_array))/self.chunk_num))
                         tempTime_chunks     = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-tempOverlapsizee))
                         tempMag_chunks      = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-tempOverlapsizee))
-                
+                    
                     degrees = np.poly1d(np.polyfit(tempTime_chunks[currentChunk], tempMag_chunks[currentChunk], currentDegree))
                     errors.append(mean_absolute_error(tempMag_chunks[currentChunk],degrees(tempTime_chunks[currentChunk])))
-
+                    counter = counter + increament
+                    print(counter)
+                    self.progress_bar.setValue(counter)
                     # to get errors by formula:
                     # calculate_error=((self.mag_chunks[j]-degrees(self.time_chunks[j])/self.mag_chunks[j])
                     # errors.append(calculate_error)
 
-            rounded_error = round(np.average(errors)*100,2)
             errors_2d = np.reshape(errors, (value_y, value_x))
+            self.progress_bar.setValue(100)
 
-            self.error_map.canvas.axes.clear()        
-            self.error_map.canvas.axes.tick_params(axis="x", colors="black")
-            self.error_map.canvas.axes.tick_params(axis="y", colors="black")        
-            self.error_map.canvas.axes.set_title("Percentage Error = " + str(rounded_error) + ' %', color='black', fontsize=15)
+            self.error_map.canvas.axes.clear() 
+            self.error_map.canvas.axes.tick_params(axis="x", colors="white")
+            self.error_map.canvas.axes.tick_params(axis="y", colors="white")        
+            self.error_map.canvas.axes.set_title("Percentage Error = " + str(rounded_error) + ' %', color='white', fontsize=15)
             
             edit_axes = make_axes_locatable(self.error_map.canvas.axes).append_axes("right", size="5%", pad="2%")
-            edit_axes.tick_params(axis="x", colors="black")
-            edit_axes.tick_params(axis="y", colors="black")
-            
+            edit_axes.tick_params(axis="x", colors="white")
+            edit_axes.tick_params(axis="y", colors="white")
+           
             data = self.error_map.canvas.axes.contourf(x_range,y_range,errors_2d)
+              
             self.error_map.canvas.axes.figure.colorbar(data , cax=edit_axes)
             self.error_map.canvas.draw()
+            edit_axes.remove()
+            self.start_button.setText("Start")
+
+  
 
 app = QtWidgets.QApplication(sys.argv)
 w = MainWindow()
