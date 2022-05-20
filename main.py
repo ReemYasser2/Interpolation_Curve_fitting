@@ -282,7 +282,7 @@ class MainWindow(QtWidgets.QMainWindow):
             
 
     def create_error_map(self):
-        self.poly_interpolate()
+        # self.poly_interpolate()
         self.start_button.setText("Cancel")
 
         # self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
