@@ -57,6 +57,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.percentage_slider.valueChanged.connect(lambda: self.percentage_display.display(self.percentage_slider.value()))
         self.time_chunks = []
         self.mag_chunks = []
+        self.degree = 1
+        self.chunk_num = 1
+        self.overlap = 0
         self.extrapolation_check = 0
 
     def open(self):
@@ -186,7 +189,7 @@ class MainWindow(QtWidgets.QMainWindow):
         return self.interpolated   # ???
     
     def choose_type(self):
-        if int(self.interpolation_type.currentIndex()) == 0:
+        if int(self.interpolation_type.currentIndex()) == 1:
             self.fit_button.clicked.connect(self.poly_interpolate) 
             self.degree_slider.setVisible(True)
             self.degree_display.setVisible(True) 
@@ -194,7 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.show_widgets()
             
           
-        elif int(self.interpolation_type.currentIndex()) == 1:
+        elif int(self.interpolation_type.currentIndex()) == 2:
             self.fit_button.clicked.connect(self.cubic) 
             self.degree_slider.setVisible(False)
             self.degree_display.setVisible(False) 
@@ -202,7 +205,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.hide_widgets()
            
 
-        elif int(self.interpolation_type.currentIndex()) == 2:
+        elif int(self.interpolation_type.currentIndex()) == 3:
             self.fit_button.clicked.connect(self.spline) 
             self.degree_slider.setVisible(True)
             self.degree_display.setVisible(True) 
@@ -260,10 +263,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.fitted=np.poly1d(np.polyfit(split_time,mag_arr,degree))
             self.interrpolation = self.fitted(split_time)
             self.plot_widget.plot(split_time, self.interrpolation,pen=self.curvePen)
-        elif int(self.interpolation_type.currentIndex()) == 1:
+        elif int(self.interpolation_type.currentIndex()) == 2:
             self.extrapolation_check = 1
             self.cubic()
-        elif int(self.interpolation_type.currentIndex()) == 2:
+        elif int(self.interpolation_type.currentIndex()) == 3:
             self.extrapolation_check = 2
             self.spline() 
         self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen)          
@@ -302,8 +305,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 
             elif(x_axis == "Overlap"):
                 value_x = self.overlap
-                
-                
+                  
             
             if(y_axis == "Number of Chunks"):
                 value_y = self.chunk_num
