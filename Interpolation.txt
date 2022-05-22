@@ -1,0 +1,8 @@
+22-05-2022:07:48:51 INFO     [main.py:165] The user choose the number of chunks as : 2
+22-05-2022:07:48:55 INFO     [main.py:165] The user choose the number of chunks as : 4
+22-05-2022:07:49:01 INFO     [main.py:165] The user choose the number of chunks as : 5
+22-05-2022:07:50:44 INFO     [main.py:165] The user choose the number of chunks as : 3
+22-05-2022:07:50:44 INFO     [main.py:169] The user choose the number of degree as : 1
+22-05-2022:07:56:04 INFO     [main.py:200] The user has chosen poly interpolate model 
+22-05-2022:07:56:05 INFO     [main.py:166] The user choose the number of chunks as : 3
+22-05-2022:07:56:05 INFO     [main.py:170] The user choose the number of degree as : 1
