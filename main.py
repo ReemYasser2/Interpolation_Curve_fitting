@@ -12,7 +12,7 @@ import numpy
 import pandas as pd
 import pathlib
 from PyQt5.QtWidgets import QMessageBox
-from sympy import degree
+from sympy import degree, false, true
 import more_itertools as mit
 from sympy import S, symbols, printing 
 from PyQt5.QtGui import QIcon, QPixmap
@@ -24,6 +24,8 @@ from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 import logging
 import time 
 import ctypes
+
+toggled_var=false
 
 plt.style.use('dark_background')
 working = False
@@ -277,16 +279,23 @@ class MainWindow(QtWidgets.QMainWindow):
         print(error)
         return error
 
+
+
     def thread(self):
-        t1=Thread(target=self.create_error_map)
-        t1.start()
+        global toggled_var
+        toggled_var= not toggled_var
+        if toggled_var== true:
+            self.start_button.setText("Cancel")
+            t1=Thread(target=self.create_error_map)
+            t1.start()
+        else:
+            return
          
             
             
 
     def create_error_map(self):
         # self.poly_interpolate()
-        self.start_button.setText("Cancel")
 
         # self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         # self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
@@ -294,6 +303,7 @@ class MainWindow(QtWidgets.QMainWindow):
         y_axis = self.y_dropdown.currentText()
         if(x_axis==y_axis):            
             ctypes.windll.user32.MessageBoxW(0, "Please change one of the axes", "ERROR", 16)
+            self.start_button.setText("Start")
 
         if not (x_axis==y_axis):
            
