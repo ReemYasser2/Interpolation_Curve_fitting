@@ -1,7 +1,9 @@
+from ast import Break, While
 from math import ceil, fabs
 from pickle import GLOBAL
 from ssl import ALERT_DESCRIPTION_NO_RENEGOTIATION
 from threading import Thread
+from tkinter import EventType
 from PyQt5 import QtWidgets, uic, QtCore
 from PyQt5.QtWidgets import QSlider, QLCDNumber
 import pyqtgraph as pg
@@ -12,7 +14,7 @@ import numpy
 import pandas as pd
 import pathlib
 from PyQt5.QtWidgets import QMessageBox
-from sympy import degree
+from sympy import Not, degree
 import more_itertools as mit
 from sympy import S, symbols, printing 
 from PyQt5.QtGui import QIcon, QPixmap
@@ -24,20 +26,24 @@ from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 import logging
 import time 
 import ctypes
+import threading
 
 plt.style.use('dark_background')
 working = False
+cancel_var = False
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         #Load the UI Page
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('task4.ui', self)
+        self.cancelingEvent = threading.Event()
         self.time = []
         self.magnitude = []
         #initially without ny changes to the spinboxes
         self.chunk_num = 1
         self.overlap = 0
+        self.cancelFlag = False
         self.chunk_size = len(self.magnitude)
         self.interpolated=[]
         self.action_open.triggered.connect(self.open) 
@@ -166,8 +172,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.n=int((len(self.time_array))/self.chunk_num)
     
     def poly_interpolate(self):
-
-
         self.split_chunks()
         self.curvePen = pg.mkPen(color=(255, 0, 0), style=QtCore.Qt.DashLine)
         self.time_array = np.array(self.time)
@@ -278,22 +282,27 @@ class MainWindow(QtWidgets.QMainWindow):
         return error
 
     def thread(self):
-        t1=Thread(target=self.create_error_map)
-        t1.start()
-         
-            
-            
-
-    def create_error_map(self):
+        global cancel_var
+        if not self.cancelingEvent.is_set():
+            self.cancelingEvent = threading.Event()
+            self.start_button.setText("Cancel")
+            t1=Thread(target=self.create_error_map,args=(self.cancelingEvent,))
+            t1.start()
+        else:
+            self.cancelFlag = not self.cancelFlag
+            self.cancelingEvent.clear()
+  
+    def create_error_map(self,stoppingEvent):
+        
+        self.cancelingEvent.set()
         # self.poly_interpolate()
-        self.start_button.setText("Cancel")
-
         # self.time_chunks = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         # self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         x_axis = self.x_dropdown.currentText()
         y_axis = self.y_dropdown.currentText()
         if(x_axis==y_axis):            
             ctypes.windll.user32.MessageBoxW(0, "Please change one of the axes", "ERROR", 16)
+            self.start_button.setText("Start")
 
         if not (x_axis==y_axis):
            
@@ -351,7 +360,12 @@ class MainWindow(QtWidgets.QMainWindow):
                         currentDegree = j
                     elif(x_axis == "Overlap"):
                         currentOverlap = j
-
+                    time.sleep(0.1)
+                    
+                    global cancel_var
+                    if not stoppingEvent.is_set():
+                        return
+                    
                     if(currentOverlap>=0 and currentOverlap<=25):
                         tempOverlapsizee    = int((currentOverlap/100)*((len(self.time_array))/self.chunk_num))
                         tempTime_chunks     = list(mit.windowed(self.time_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-tempOverlapsizee))
