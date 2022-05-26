@@ -25,6 +25,9 @@ import logging
 import time 
 import ctypes
 
+logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',datefmt='%d-%m-%Y:%H:%M:%S',
+level=logging.INFO,filename='Interpolation.txt')
+
 plt.style.use('dark_background')
 working = False
 class MainWindow(QtWidgets.QMainWindow):
@@ -104,6 +107,7 @@ class MainWindow(QtWidgets.QMainWindow):
         qp = QPixmap()
         qp.loadFromData(image_bytes)
         self.equation_label.setPixmap(qp)
+        logging.debug("LateX has been done successfuly ")
     
     def spline(self):
         percent_data = self.percentage_slider.value()
@@ -159,9 +163,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.time_array = np.array(self.time)
         self.magnitude_array = np.array(self.magnitude)
         self.chunk_num = self.num_chunks_input.value()
+        logging.info("The user choose the number of chunks as : " + str(self.chunk_num))
         self.chunk_size = int(len(self.magnitude) / self.chunk_num)
         overlap_size = int((self.overlap_input.value() / 100) * self.chunk_size)
         self.degree= self.degree_slider.value()
+        logging.info("The user choose the number of degree as : " + str(self.degree))
         self.overlap=int(self.overlap_input.value())
         self.n=int((len(self.time_array))/self.chunk_num)
     
@@ -178,6 +184,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.mag_chunks = list(mit.windowed(self.magnitude_array, n=int(len(self.time_array)/self.chunk_num), step=self.n-self.overlapsizee))
         
         self.plotting() 
+        logging.debug("modelExtrapolation has been done successfuly plotted ")
         
 
         for i in range(self.chunk_num):
@@ -190,6 +197,8 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def choose_type(self):
         if int(self.interpolation_type.currentIndex()) == 1:
+            logging.info("The user has chosen poly interpolate model ")
+
             self.fit_button.clicked.connect(self.poly_interpolate) 
             self.degree_slider.setVisible(True)
             self.degree_display.setVisible(True) 
@@ -198,6 +207,7 @@ class MainWindow(QtWidgets.QMainWindow):
             
           
         elif int(self.interpolation_type.currentIndex()) == 2:
+            logging.info("The user has chosen cubic model ")
             self.fit_button.clicked.connect(self.cubic) 
             self.degree_slider.setVisible(False)
             self.degree_display.setVisible(False) 
@@ -206,6 +216,7 @@ class MainWindow(QtWidgets.QMainWindow):
            
 
         elif int(self.interpolation_type.currentIndex()) == 3:
+            logging.info("The user has chosen spline model ")
             self.fit_button.clicked.connect(self.spline) 
             self.degree_slider.setVisible(True)
             self.degree_display.setVisible(True) 
@@ -269,12 +280,13 @@ class MainWindow(QtWidgets.QMainWindow):
         elif int(self.interpolation_type.currentIndex()) == 3:
             self.extrapolation_check = 2
             self.spline() 
-        self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen)          
+        self.plot_widget.plot(time_predict, arr_predict, pen = self.curPen)   
+        logging.debug("extrapoliation has been generated sucessfully")       
           
     def computeError(self,y_interpolated,y_original):
         # Compute the error
         error = np.average(abs((y_interpolated - y_original)/y_original))
-        print(error)
+        
         return error
 
     def thread(self):
@@ -384,6 +396,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.error_map.canvas.draw()
             edit_axes.remove()
             self.start_button.setText("Start")
+            logging.debug("Errors has been generated sucessfully")
 
   
 
